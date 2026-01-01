@@ -1,0 +1,48 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model EsimDelivery {
+  id                 String   @id @default(cuid())
+  shop               String
+  orderId            String
+  orderName          String
+  lineItemId         String
+  variantId          String
+  customerEmail      String?
+  vendorReferenceId  String?
+  payloadEncrypted   String?
+  status             String   @default("pending")
+  lastError          String?
+  attempts           DeliveryAttempt[]
+  esimOrders         EsimOrder[]
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+}
+
+model DeliveryAttempt {
+  id          String       @id @default(cuid())
+  delivery    EsimDelivery @relation(fields: [deliveryId], references: [id])
+  deliveryId  String
+  channel     String
+  result      String?
+  createdAt   DateTime     @default(now())
+}
+
+model EsimOrder {
+  id                 String   @id @default(cuid())
+  delivery           EsimDelivery? @relation(fields: [deliveryId], references: [id])
+  deliveryId         String?
+  vendorReferenceId  String   @unique
+  payloadJson        Json?
+  payloadEncrypted   String?
+  status             String   @default("created")
+  lastError          String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+}

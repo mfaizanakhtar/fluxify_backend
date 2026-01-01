@@ -1,0 +1,4185 @@
+===== PAGE 1 =====
+
+Confidentiality:
+RoamWiFi
+ESIMAPIDocumentation
+TianjinRoamWiFiTechnologyCo.,Ltd
+
+
+===== PAGE 2 =====
+
+Documentdescription
+Thetexts,diagrams,etc.referredtointhisdocumentarelimitedtoTianjin
+RoamWiFiTechnologyCo.,Ltd.andareusedinternallybythepresentparty.Do
+notspreadtothirdpartieswithoutthewrittenpermissionofTianjinRoamWiFi
+TechnologyCo.,Ltd.
+DocumentProperties
+Attributes content
+projectname: ESIMAPIDocumentation
+filename: "ESIMAPIDocumentation"
+Authorofthe
+document:TianjinRoamWiFiTechnologyCo.,Ltd
+Documentchangehistory
+version description ReviserRevisionDate
+V2.0 LiuGuoKun2023/12/25
+V2.1AddeSIMrelatedinterfaces Liuguokun2024/01/24
+V2.2AddeSIMrenewalinterface Liuguokun2024/02/22
+V2.3ModifythereturnformatoftheSendPDF
+EmailinterfaceLiuguokun2024/04/16
+V2.4AddPhysicalSIMrelatedinterfaces WangZhen2024/05/23
+V2.5Addediccidrenewalsupportrelated
+interfacesLiuguokun2024/07/24
+
+
+===== PAGE 3 =====
+
+V2.6AddedDPIDandICCIDquerysupportfor
+allpackageinformationLiuguokun2024/12/5
+V2.7Addthefunctionofqueryingresources,
+placingordersandrenewingcontracts
+basedontheuniqueidentificationcode
+ofthepackageLiuguokun2025/01/13
+V2.8ModifytheeSIMordersequencediagramLiuguokun2025/03/27
+V2.9AddanAPItoqueryaccountbalance,and
+returnAPNinSIMcardinformationLiuguokun2025/07/02
+V2.10Orderscanbesentviaemail;ordersand
+renewalscanbesentinmultiple
+languagesusingPDFfiles.AddedPDF
+supportformultilinguallistsinthe
+appendix;Liuguokun2025/8/28
+
+
+===== PAGE 4 =====
+
+~1~
+TableofContents
+1BASICINFORMATION..............................................................................................................................7
+2ESIMINTERFACE.........................................................................................................................................8
+2.1VERIFICATIONINFORMATIONINTERFACEDESCRIPTION.........................................................................9
+2.1.1InterfaceDescription.......................................................................................................................9
+2.1.2Interfaceconstraints........................................................................................................................9
+2.1.3Interfacename.................................................................................................................................9
+2.1.4Returnconstraints...........................................................................................................................9
+2.1.5Returnform....................................................................................................................................10
+2.2GETESIMSKULIST..............................................................................................................................11
+2.2.1InterfaceDescription..........................................................................................................11
+2.2.2Interfaceconstraints..........................................................................................................11
+2.2.3Interfacename........................................................................................................................11
+2.2.4Returnconstraints................................................................................................................11
+2.2.5ReturnForm..............................................................................................................................12
+2.3GETSKUSANDGROUPINGTHEMBYCONTINENT.................................................................................13
+2.3.1InterfaceDescription..........................................................................................................13
+2.3.2Interfaceconstraints..........................................................................................................13
+2.3.3Interfacename........................................................................................................................13
+2.3.4Returnconstraints................................................................................................................13
+2.3.5ReturnForm..............................................................................................................................14
+2.4GETTHELISTOFSUPPORTEDPACKAGESACCORDINGTOSKUID..........................................................17
+2.4.1InterfaceDescription..........................................................................................................17
+2.4.2Interfaceconstraints..........................................................................................................17
+2.4.3Interfacename........................................................................................................................17
+2.4.4Returnconstraints................................................................................................................17
+2.4.5ReturnForm..............................................................................................................................20
+2.5SIMCARDORDERING(SUPPORTS:ESIMANDPHYSICALSIMCARDS).................................................24
+2.5.1InterfaceDescription..........................................................................................................24
+2.5.2Interfaceconstraints..........................................................................................................24
+
+
+===== PAGE 5 =====
+
+~2~
+2.5.3Interfacename........................................................................................................................26
+2.5.4Returnconstraints................................................................................................................26
+2.5.5ReturnForm..............................................................................................................................28
+2.6GETORDERINFORMATIONACCORDINGTOORDERNUMBER.................................................................32
+2.6.1InterfaceDescription..........................................................................................................32
+2.6.2Interfaceconstraints..........................................................................................................32
+2.6.3Interfacename........................................................................................................................32
+2.6.4Returnconstraints................................................................................................................32
+2.6.5ReturnForm..............................................................................................................................34
+2.7QUERYTHEESIMORDERLIST..............................................................................................................37
+2.7.1InterfaceDescription..........................................................................................................37
+2.7.2Interfaceconstraints..........................................................................................................37
+2.7.3Interfacename........................................................................................................................37
+2.7.4Returnconstraints................................................................................................................38
+2.7.5ReturnForm..............................................................................................................................39
+2.8VERIFYRESOURCES...............................................................................................................................42
+2.8.1InterfaceDescription..........................................................................................................42
+2.8.2Interfaceconstraints..........................................................................................................42
+2.8.3Interfacename........................................................................................................................42
+2.8.4Returnconstraints................................................................................................................42
+2.8.5ReturnForm..............................................................................................................................43
+2.9GETTHEESIMCARDINFORMATIONOFTHEORDER.............................................................................44
+2.9.1InterfaceDescription..........................................................................................................44
+2.9.2Interfaceconstraints..........................................................................................................44
+2.9.3Interfacename........................................................................................................................44
+2.9.4Returnconstraints................................................................................................................44
+2.9.5ReturnForm..............................................................................................................................47
+2.10SENDPDFEMAIL.................................................................................................................................51
+2.10.1InterfaceDescription........................................................................................................51
+2.10.2Interfaceconstraints........................................................................................................51
+2.10.3Interfacename......................................................................................................................52
+2.10.4Returnconstraints..............................................................................................................52
+
+
+===== PAGE 6 =====
+
+~3~
+2.10.5ReturnForm............................................................................................................................52
+2.11UNSUBSCRIBEFROMSIMCARDORDER(SUPPORTS:ESIMANDPHYSICALSIMCARDS)...................54
+2.11.1InterfaceDescription........................................................................................................54
+2.11.2Interfaceconstraints........................................................................................................54
+2.11.3Interfacename......................................................................................................................54
+2.11.4Returnconstraints..............................................................................................................54
+2.11.5ReturnForm............................................................................................................................55
+2.12SIMRENEWAL(SUPPORTS:ESIMANDPHYSICALSIMCARDRENEWAL)...........................................56
+2.12.1InterfaceDescription........................................................................................................56
+2.12.2Interfaceconstraints........................................................................................................56
+2.12.3Interfacename......................................................................................................................57
+2.12.4Returnconstraints..............................................................................................................57
+2.12.5ReturnForm............................................................................................................................59
+2.13PHYSICALSIM-GETSUPPORTEDPHYSICALSIMDPINFORMATION...............................................63
+2.13.1InterfaceDescription........................................................................................................63
+2.13.2Interfaceconstraints........................................................................................................63
+2.13.3Interfacename......................................................................................................................63
+2.13.4Returnconstraints..............................................................................................................63
+2.13.5ReturnForm............................................................................................................................64
+2.14PHYSICALSIM-GETINFORMATIONABOUTSKUSSUPPORTEDBYDP............................................65
+2.14.1InterfaceDescription........................................................................................................65
+2.14.2Interfaceconstraints........................................................................................................65
+2.14.3Interfacename......................................................................................................................65
+2.14.4Returnconstraints..............................................................................................................65
+2.14.5ReturnForm............................................................................................................................66
+2.15PHYSICALSIM-GETINFORMATIONABOUTSKUSSUPPORTEDBYDP-GROUPEDBYCONTINENT67
+2.15.1InterfaceDescription........................................................................................................67
+2.15.2Interfaceconstraints........................................................................................................67
+2.15.3Interfacenam........................................................................................................................67
+2.15.4Returnconstraints..............................................................................................................67
+2.15.5ReturnForm............................................................................................................................68
+2.16PHYSICALSIM-GETTHELISTOFSUPPORTEDPACKAGESBASEDONDPIDANDSKUID.....................70
+
+
+===== PAGE 7 =====
+
+~4~
+2.16.1InterfaceDescription........................................................................................................70
+2.16.2Interfaceconstraints........................................................................................................70
+2.16.3Interfacename......................................................................................................................70
+2.16.4Returnconstraints..............................................................................................................70
+2.16.5ReturnForm............................................................................................................................72
+2.17GETSKUSSUPPORTEDBYICCID.......................................................................................................75
+2.17.1InterfaceDescription........................................................................................................75
+2.17.2Interfaceconstraints........................................................................................................75
+2.17.3Interfacename......................................................................................................................75
+2.17.4Returnconstraints..............................................................................................................75
+2.17.5ReturnForm............................................................................................................................76
+2.18GETSKUGROUPSSUPPORTEDBYICCID...........................................................................................77
+2.18.1InterfaceDescription........................................................................................................77
+2.18.2Interfaceconstraints........................................................................................................77
+2.18.3Interfacename......................................................................................................................77
+2.18.4Returnconstraints..............................................................................................................77
+2.18.5ReturnForm............................................................................................................................78
+2.19GETTHEPACKAGEDETAILSSUPPORTEDBYTHESKUSUPPORTEDBYICCID...................................81
+2.19.1InterfaceDescription........................................................................................................81
+2.19.2Interfaceconstraints........................................................................................................81
+2.19.3Interfacename......................................................................................................................81
+2.19.4Returnconstraints..............................................................................................................81
+2.19.5ReturnForm............................................................................................................................84
+2.20PHYSICALSIM-GETTHELISTOFSUPPORTEDPACKAGESBASEDONDPID........................................88
+2.20.1InterfaceDescription........................................................................................................88
+2.20.2Interfaceconstraints........................................................................................................88
+2.20.3Interfacename......................................................................................................................88
+2.20.4Returnconstraints..............................................................................................................88
+2.20.5ReturnForm............................................................................................................................90
+2.21GETTHEPACKAGEDETAILSSUPPORTEDBYTHEICCID....................................................................93
+2.21.1InterfaceDescription........................................................................................................93
+2.21.2Interfaceconstraints........................................................................................................93
+
+
+===== PAGE 8 =====
+
+~5~
+2.21.3Interfacename......................................................................................................................93
+2.21.4Returnconstraints..............................................................................................................93
+2.21.5ReturnForm............................................................................................................................96
+2.22QUERYSIMCARDORDERINFORMATIONLIST(SUPPORTS:ESIMANDPHYSICALSIMCARD
+RENEWAL)..................................................................................................................................................100
+2.22.1InterfaceDescription......................................................................................................100
+2.22.2Interfaceconstraints......................................................................................................100
+2.22.3Interfacename....................................................................................................................101
+2.22.4Returnconstraints............................................................................................................101
+2.22.5ReturnForm..........................................................................................................................103
+2.23VERIFYRESOURCESBASEDONTHEPACKAGE'SUNIQUEIDENTIFICATIONCODE...............................106
+2.23.1InterfaceDescription......................................................................................................106
+2.23.2Interfaceconstraints......................................................................................................106
+2.23.3Interfacename....................................................................................................................106
+2.23.4Returnconstraints............................................................................................................106
+2.23.5ReturnForm..........................................................................................................................107
+2.24PLACEANORDERFORASIMCARDBASEDONTHEPACKAGE'SUNIQUEIDENTIFICATIONCODE
+(SUPPORTS:ESIMANDPHYSICALCARDS)................................................................................................108
+2.24.1InterfaceDescription......................................................................................................108
+2.24.2Interfaceconstraints......................................................................................................108
+2.24.3Interfacename....................................................................................................................109
+2.24.4Returnconstraints............................................................................................................109
+2.24.5ReturnForm..........................................................................................................................112
+2.25SIMRENEWALBASEDONPACKAGEUNIQUEIDENTIFICATIONCODE(SUPPORT:ESIMANDPHYSICAL
+CARDRENEWAL)........................................................................................................................................116
+2.25.1InterfaceDescription......................................................................................................116
+2.25.2Interfaceconstraints......................................................................................................116
+2.25.3Interfacename....................................................................................................................117
+2.25.4Returnconstraints............................................................................................................117
+2.25.5ReturnForm..........................................................................................................................119
+2.26GETACCOUNTBALANCE...................................................................................................................123
+2.26.1InterfaceDescription......................................................................................................123
+
+
+===== PAGE 9 =====
+
+~6~
+2.26.2Interfaceconstraints......................................................................................................123
+2.26.3Interfacename....................................................................................................................123
+2.26.4Returnconstraints............................................................................................................123
+2.26.5ReturnForm..........................................................................................................................124
+3APPENDIX................................................................................................................................................125
+3.1ORDERFORMSTATETABLE..................................................................................................................125
+3.2PDFSUPPORTSMULTILINGUALLISTS..................................................................................................126
+3.3JAVALOGINDEMO..............................................................................................................................127
+3.4PHPLOGINDEMO...............................................................................................................................129
+3.5PYTHONLOGINDEMO.........................................................................................................................130
+
+
+===== PAGE 10 =====
+
+~7~
+1BasicInformation
+(1)testusingkeys:1234567890qwertyuiopasdfghjklzxc
+(2)VerificationIDtokenisvalidfor2hours,andeachtimeatokenisgenerated,the
+lastoneexpires.Thecacheshouldbelocalandexpireinlessthantwohours.
+(3)PleaseseetheappendixforJAVA,PHP,andPythonlogindemos
+(4)ForusersinMainlandChina,pleaseuse:http://bpm.roamwifi.com
+Foroverseasregions,pleaseuse:https://bpm.roamwifi.hk
+
+
+===== PAGE 11 =====
+
+~8~
+2eSIMinterface
+
+
+===== PAGE 12 =====
+
+~9~
+2.1VerificationInformationInterfaceDescription
+2.1.1InterfaceDescription
+Authenticationinformationinterface:VerifiestheinformationoftheBPMsystem
+userandsuccessfullyreturnsthecallidentifierforthecallparametersofother
+interfaces.
+2.1.2Interfaceconstraints
+No.Fieldname TypesofIs
+emptydescription
+1Phonenumber StringNOphonenumber
+2password StringNOpassword
+3sign StringNOsignature
+2.1.3Interfacename
+ProductionAccess:https://bpm.roamwifi.hk/api_order/login
+2.1.4Returnconstraints
+No.Fieldname TypesofIsemptydescription
+1code intno responsestatus
+2message Stringno responseinformation
+3data mapno responsedataHerestoragetoken
+
+
+===== PAGE 13 =====
+
+~10~
+2.1.5Returnform
+Landedsuccessfully:{"Code":1,"message":"!Successful","data":{"token":
+"29281-9EFE5E410BEF5300DD15E3830BD65601"}}
+failure:{"Code":-1,"message":"UsernamePasswordwrong!","Data":""}
+failure:{"Code":-2,"message":"!Usernameorpasswordisempty","data":""}
+failure:{"Code":-3,"message":"Nocallinterfacepermission","data":""}
+Failure:{code:-30,message:signwrong,data:}
+
+
+===== PAGE 14 =====
+
+~11~
+2.2geteSIMSKUlist
+2.2.1InterfaceDescription
+QuerythesupportedeSIMproductlistinformation
+2.2.2Interfaceconstraints
+No.FieldnameTypes
+ofIs
+empt
+ydescription Examples
+1 token StringNo
+2 sign StringNoParametersignature
+2.2.3Interfacename
+Production：https://bpm.roamwifi.hk/api_esim/getSkus
+2.2.4Returnconstraints
+No.Fieldname TypesofIsemptydescription
+1code StringNo responsestatus
+2message StringNo responsemessage
+3data StringNo responsedata
+Thecontentdata
+FieldnamedescriptionMan
+dat
+oryRemark Typesof
+skuid SkucodingY Integer
+display Skudisplay
+nameY String
+countryCodeCountrycodeY String
+
+
+===== PAGE 15 =====
+
+~12~
+2.2.5ReturnForm
+success：{"code":"0","message":"success",
+"data":[
+{
+"skuid":156,
+"display":"Africa",
+"countryCode":"99918"
+},
+{
+"skuid":124,
+"display":"Asia30",
+"countryCode":"99115"
+},
+{
+"skuid":123,
+"display":"Asia4",
+"countryCode":"99112"
+}
+]
+}
+fail：{"code":-1,"message":"tokenexpire","data":""}
+
+
+===== PAGE 16 =====
+
+~13~
+2.3GetSKUsandgroupingthembycontinent
+2.3.1InterfaceDescription
+GetSKUsandgroupingthembycontinent.
+2.3.2Interfaceconstraints
+No.FieldnameTypes
+ofIs
+empt
+ydescription Examples
+1 token StringNo
+2 sign StringNoParameter
+signature
+2.3.3Interfacename
+Production：https://bpm.roamwifi.hk/api_esim/getSkuByGroup
+2.3.4Returnconstraints
+No.Fieldname TypesofIs
+empt
+ydescription
+1code StringNoresponsestatus
+2message StringNoresponsemessage
+3data StringNoresponsedata
+datafieldattribute
+FieldnamedescriptionMan
+dat
+oryRemark Typesof
+continent continent
+nameY String
+
+
+===== PAGE 17 =====
+
+~14~
+data skucollectionY Map<Stri
+ng,
+List<Bpm
+ESIMSkuN
+ewDto>>
+ReturnstheBpmESIMSkuNewDtoattributeoftheformatdata.datafield
+FieldnamedescriptionMan
+dat
+oryRemark Typesof
+skuid skuencodingY String
+countrycodecountrycodeY String
+imageUrl ProducticonY String
+display Product
+ChinesenameY String
+note product
+descriptionY String
+search search
+conditionY String
+continentCodecontinent
+numberY String
+2.3.5ReturnForm
+success：
+{
+"code":"0",
+"message":"success",
+"data":{
+"continent":[
+"Common",
+"Asia",
+….,
+
+
+===== PAGE 18 =====
+
+~15~
+],
+"data":{
+"Common":[
+{
+"skuid":123,
+"countryCode":99112,
+"imageUrl":
+"http://img.roamwifi.com/phoneImage/202309//92529d82-4f15-445d-83ab-0b11bac40f
+af.jpg",
+"display":"Asia8countries",
+"note":
+"Korea,Cambodia,Malaysia,Thailand,Singapore,Indonesia,Vietnam，Japan",
+"search":
+"Korea,Cambodia,Malaysia,Japan,Thailand,Singapore,Indonesia,Vietnam",
+"continentCode":7
+},
+….]
+"Asia":[
+{
+"skuid":26,
+"countryCode":392,
+"imageUrl":
+"http://img.roamwifi.com/phoneImage/202009//0ac9086d-8ca4-4e60-b8d1-2504ca3ada
+75.jpg",
+"display":"Japan",
+"note":"Japan",
+"search":"Japan",
+"continentCode":1
+},
+…],
+…
+
+
+===== PAGE 19 =====
+
+~16~
+},
+fail：
+{"code":-1,"message":"tokenexpire","data":""}
+{
+"code":-30,
+"message":"signwrong",
+"data":"signwrong"
+}
+
+
+===== PAGE 20 =====
+
+~17~
+2.4GetthelistofsupportedpackagesaccordingtoskuId
+2.4.1InterfaceDescription
+Querythepackagelistinformationsupportedbythecurrentsku
+2.4.2Interfaceconstraints
+No.FieldnameTypes
+ofIs
+empt
+ydescription Examples
+1 token StringNo
+2 skuId StringNo
+3 sign StringNoParameter
+signature
+2.4.3Interfacename
+Production：https://bpm.roamwifi.hk/api_esim/getPackages
+2.4.4Returnconstraints
+No.Fieldname TypesofIs
+empt
+ydescription
+1code StringNoresponsestatus
+2message StringNoresponsemessage
+3data StringNoresponsedata
+Thecontentdata
+FieldnamedescriptionMan
+dat
+oryRemark Typesof
+
+
+===== PAGE 21 =====
+
+~18~
+skuid Sku'scodeY String
+detailId Orderdetails
+idInteger
+countrycodeCountrycodeY String
+imageUrl Producticon String
+display Productname
+inChineseString
+displayEn Productname
+inEnglishString
+esimpackageDto
+Listesimpackage
+collectionList<Esi
+mPackage
+Dto>
+supportCountrySupported
+CountriesList<Str
+ing>
+expirydateExpiredtime Date
+countryImageUr
+lDtoListListofcountry
+icon
+informationList<Cou
+ntryImag
+eUrlDto>
+ReturnFormatEsimPackageDtoFieldProperties
+FieldnamedescriptionMan
+dat
+oryRemark Typesof
+flows Numberof
+Package
+TrafficY Integer
+days Daysof
+validityof
+packageY Integer
+unit TrafficunitYGB/MB String
+price PackagePriceY Double
+priceid Unique
+IdentificationY Integer
+flowType Renewableor
+notY0-renewable,1-
+non-renewableInteger
+
+
+===== PAGE 22 =====
+
+~19~
+countryImageUr
+lDtoListListofCountry
+IconsY List<Cou
+ntryImag
+eUrlDto>
+showName DisplayNameY String
+pid Y Integer
+premark descriptiveY String
+expireDaysExpiredPolicyY0-effectiveimmediately,
+non-zero-expiresaftern
+days,or30daysamonthin
+thecaseofmonths.Integer
+networkDtoListNetwork
+SupportY List<Net
+workDto>
+supportDaypassWhetherthe
+daypackageY0-Regularpackage,
+1-Inclusivepackage，
+2-EnumpackageInteger
+openCardFeeCardOpening
+FeeY Integer
+minDay Minimum
+numberof
+daysY Integer
+singleDiscount
+DayNumberof
+daysforword
+discountY Integer
+singleDiscountWord
+DiscountY Integer
+maxDiscountMaximum
+DiscountY Integer
+maxDay Maximum
+DaysY Integer
+mustDate Daterequired
+ornotY1-Required Integer
+apiCode Unique
+identifierfor
+thepackageY99911-0-?-500-M-D String
+
+
+===== PAGE 23 =====
+
+~20~
+ReturnFormatCountryImageUrlDtoFieldProperties
+FieldnamedescriptionMan
+dat
+oryRemark Typesof
+imageUrl CountryIcon
+LinksY String
+countrycodeCountryCodeY Integer
+name Country
+NameY String
+nameEn Country
+Name
+(English)Y String
+ReturnFormatCountryImageUrlDtoFieldProperties
+FieldnamedescriptionMan
+dat
+oryRemark Typesof
+type NetworkTypeY0-3G1-LTE2-5G String
+operator Carrier Y String
+namecn Country
+NameY String
+nameen Country
+Name
+(English)Y String
+2.4.5ReturnForm
+success：
+{
+"code":"0",
+"message":"成功",
+"data":{
+"skuid":45,
+
+
+===== PAGE 24 =====
+
+~21~
+"detailId":null,
+"countrycode":"40",
+"imageUrl":
+"http://img.roamwifi.com/phoneImage/202009//af0c08eb-6f95-479d-843c-0638e1fc32fa
+.jpg",
+"display":"奥地利",
+"displayEn":"Austria",
+"esimPackageDtoList":[
+{
+"flows":1,
+"days":3,
+"unit":"GB",
+"price":2.66,
+"priceid":441,
+"flowType":0,
+"countryImageUrlDtoList":null,
+"showName":"",
+"pid":52,
+"premark":"Plantype:Dataonly<br>\nAPN:internet<br>\nActivation
+Policy:ThevalidityperiodstartswhenyouturnonroamingandtheeSIMconnectstoany
+supportednetwork.<br>\nCancellationpolicy:Ordercannotbecancelledorrefunded
+oncethe\"installeSIM\"buttonisclicked.",
+"overlay":1,
+"expireDays":0,
+"networkDtoList":[
+{
+"type":"LTE",
+"operator":"A1.net",
+"namecn":"奥地利",
+"nameen":"Austria"
+},
+
+
+===== PAGE 25 =====
+
+~22~
+{
+"type":"LTE",
+"operator":"Hutchison3G",
+"namecn":"奥地利",
+"nameen":"Austria"
+}
+],
+"supportDaypass":0,
+"openCardFee":0,
+"minDay":3,
+"singleDiscountDay":3,
+"singleDiscount":1,
+"maxDiscount":15,
+"maxDay":30,
+"mustDate":0,
+“apiCode”:”40-0-3-1-G”
+}
+],
+"supportCountry":[
+"Austria"
+],
+"expirydate":null,
+"countryImageUrlDtoList":[
+{
+"imageUrl":
+"http://img.roamwifi.com/phoneImage/202009//50948d3f-e32a-499e-a38e-c55ce6f9be5
+2.jpg",
+"countryCode":40,
+"name":"奥地利",
+"nameEn":"Austria"
+}
+
+
+===== PAGE 26 =====
+
+~23~
+]
+}
+}
+fail：
+{"code":-1,"message":"tokenexpire","data":""}
+{"code":-2,"message":"paramsisnotnull","data":""}
+{
+"code":-30,
+"message":"signwrong",
+"data":"signwrong"
+}
+
+
+===== PAGE 27 =====
+
+~24~
+2.5SIMcardordering(supports:eSIMandphysicalSIM
+cards)
+2.5.1InterfaceDescription
+PlaceSIMcardorderbasedontheplaninformation(supports:eSIMand
+physicalSIMcards)anddeducttheamountfromtheaccount.
+2.5.2Interfaceconstraints
+No.FieldnameTypesofIsemptydescription
+1 token StringNo
+2 skuId StringNo ProductID
+3 priceIdStringNoPackagepriceID
+4 count StringNo Orderquantity
+5 daypassDaysStringYesThenumberofdaystoplace
+anorderforaday-pack
+package;
+Thefieldisnotemptywhen
+supportDaypass=1inthe
+resultofgettingthelistof
+packages,andthenumberof
+daystoplaceanordershould
+satisfytheminDayand
+maxDayconditionrestrictions;
+6 beginDateStringYesPackageifthedateis
+required,thestarttimeis
+requiredintheformat:
+MM/dd/yyyy
+
+
+===== PAGE 28 =====
+
+~25~
+7 remarkStringYesRemarkinformation
+8 otherOrderIdStringYesExternalplatformorderID
+9 otherItemIdStringYesExternalplatformlineitemID
+10 otherPriceStringYesExternalplatformunitprice
+11 backInfoStringYes0/NULLreturnstheorder
+number
+1.Returntoorderdetails
+2.ReturnsthePDF-URL
+informationoftheorder
+12 sign StringNoParametersignature
+13 dpId StringYes2.13GettheDPIDofthe
+physicalcard
+14 iccidsStringYesMultipleiccidsareseparated
+bycommas,andthenumber
+iscountvalue.
+15 customerEmai
+lStringNoCustomeremailaddress(Ifit
+doesnotconformtothe
+emailaddressformat,the
+emailwillnotbesent;)
+16 isSendEmailStringNoWhethertosendemail(0/null:
+notsend,1:send)
+17 pdfLanguageStringNopdflanguage(refertothe
+languagecodeinAppendix
+3.2.Ifitisnotintheappendix,
+Englishwillbeusedby
+default)
+
+
+===== PAGE 29 =====
+
+~26~
+2.5.3Interfacename
+Production：https://bpm.roamwifi.hk/api_esim/addEsimOrder
+2.5.4Returnconstraints
+No.Fieldname TypesofIs
+empt
+ydescription
+1code StringNoresponsestatus
+2message StringNoresponsemessage
+3data StringNoresponsedata
+Thecontentdata
+FieldnamedescriptionMan
+dat
+oryRemark Typesof
+orderNum OrderNoY String
+display DisplaynameY String
+purchaseDateOrdertimeY String
+count Order
+quantityY String
+price totalpriceY
+status OrderstatusY0:Normal,paid,-1:
+Unpaid,2:Cancel;3:
+Obsolete;4:Partial
+unsubscribe;Integer
+renewal Renewal
+OrderY Boolean
+mainOrderNumMainOrder
+OrderNumberYIftheorderisrenewed,
+theordernumberofthe
+mainorderwillbereturnedStirng
+starDate startdateY String
+endDate enddateY String
+
+
+===== PAGE 30 =====
+
+~27~
+outerOrderidExternalorder
+numberY String
+outerItemIdExternalline
+itemnumberY String
+renew Renewal
+orderY0:Mainorder1:Renewal
+orderInteger
+priceId Packageprice
+IDY Integer
+renewOrderNumRenewal
+OrderNumber
+SetYIfthemainorderhasa
+renewalorder,thenumber
+setoftherenewalorder
+willbereturnedList<Str
+ing>
+cardApiDtoListEsim
+Information
+SetY List<
+EsimOrde
+rCardApi
+Dto>
+ReturnFormatEsimOrderCardApiDtoFieldProperties
+FieldnamedescriptionMan
+dat
+oryRemark Typesof
+data FlowdataY2GB String
+validity Validdaysof
+packageY Integer
+sm_dp_addresssm-dp+
+addressY String
+activationCode Y String
+mobileNumberEsimnumberY String
+iccid ICCID Y String
+activateBeforeLatest
+activation
+timeY2022-11-25 String
+code UsagecodeYAndroidphonesusethis
+codetoregisteresimString
+usedMB UsageMBYPackagedaydateordersare
+notsupportedString
+
+
+===== PAGE 31 =====
+
+~28~
+startDate StartDateY String
+endDate EnddateY String
+pdfUrl pdflinkY String
+dpId Y Integer
+dpStatus Y String
+eid Y String
+apn APN Y String
+2.5.5ReturnForm
+success：
+{
+"code":"0",
+"message":"success",
+"data":"EP20221104000005"
+}
+{
+"code":"0",
+"message":"success",
+"data":{
+"orderNum":"EP20240124000013",
+"display":"Australia",
+"purchaseDate":"2024-01-24(GMT+8)",
+"count":1,
+"price":"9.89",
+"status":0,
+"renewal":true,
+"mainOrderNum":null,
+"startDate":null,
+"endDate":null,
+"outerOrderid":"",
+
+
+===== PAGE 32 =====
+
+~29~
+"outerItemId":"",
+“renew”:0,
+“priceId”:9726,
+"renewOrderNum":[],
+"cardApiDtoList":[
+{
+"data":"6GB",
+"validity":8,
+"sm_dp_address":"ais.prod.ondemandconnectivity.com",
+"activationCode":"SEW7JEBMFGPRVSPD",
+"mobileNumber":"0841823354",
+"iccid":"934801019851134300",
+"activateBefore":"2024-02-24(GMT+8)",
+"code":
+"LPA:1$ais.prod.ondemandconnectivity.com$SEW7JEBMFGPRVSPD",
+"usedMB":"0.0",
+"startDate":null,
+"endDate":null,
+"pdfUrl":null,
+“dpId”:9,
+"dpStatus":null,
+"eid":null,
+“apn”:"plus"
+}
+]
+}
+}
+{
+"code":"0",
+"message":"success",
+
+
+===== PAGE 33 =====
+
+~30~
+"data":{
+"orderNum":"EP20240124000014",
+"display":"Australia",
+"purchaseDate":"2024-01-24(GMT+8)",
+"count":1,
+"price":"9.89",
+"status":0,
+"renewal":false,
+"mainOrderNum":null,
+"startDate":null,
+"endDate":null,
+"outerOrderid":"",
+"outerItemId":"",
+“renew”:1,
+“priceId”:9727,
+"renewOrderNum":[],
+"cardApiDtoList":[
+{
+"data":"6GB",
+"validity":8,
+"sm_dp_address":"ais.prod.ondemandconnectivity.com",
+"activationCode":"SEW7JEBMFGPRVSPD",
+"mobileNumber":"0848735511",
+"iccid":"162984356292255940",
+"activateBefore":"2024-02-24(GMT+8)",
+"code":
+"LPA:1$ais.prod.ondemandconnectivity.com$SEW7JEBMFGPRVSPD",
+"usedMB":"0.00",
+"startDate":null,
+"endDate":null,
+"pdfUrl":
+
+
+===== PAGE 34 =====
+
+~31~
+"http://img.roamwifi.com/phoneImage/202401//8bd384ba-729d-4d12-bc2e-b1f6908f07
+4b.pdf",
+“dpId”:9,
+"dpStatus":null,
+"eid":null,
+“apn”:"plus"
+}
+]
+}
+}
+fail：
+{"code":-2,"message":"paramsisnotnull","data":""}
+{"code":-3,"message":"datanotexist","data":""}
+{
+"code":-30,
+"message":"signwrong",
+"data":"signwrong"
+}
+
+
+===== PAGE 35 =====
+
+~32~
+2.6Getorderinformationaccordingtoordernumber
+2.6.1InterfaceDescription
+Obtainthedetailsoftheorderaccordingtotheordernumberreturnedfromthe
+order(renewal),includingtherelevantinformationoftheesimcard.Afterobtaining
+theinformation,youcannotunsubscribe
+2.6.2Interfaceconstraints
+No.FieldnameTypes
+ofIs
+empt
+ydescription Examples
+1 token StringNo
+2 orderNumStringNoOrderNo
+3 sign StringNoParameter
+signature
+2.6.3Interfacename
+Production：https://bpm.roamwifi.hk/api_esim/getOrderInfo
+2.6.4Returnconstraints
+No.Fieldname TypesofIs
+empt
+ydescription
+1code StringNoresponsestatus
+2message StringNoresponsemessage
+3data StringNoresponsedata
+Thecontentdata
+FieldnamedescriptionMan Remark Typesof
+
+
+===== PAGE 36 =====
+
+~33~
+dat
+ory
+orderNum OrderNoY String
+display DisplaynameY String
+purchaseDateOrdertimeY String
+count Order
+quantityY String
+price price Y Integer
+status OrderstatusY0:Normal,paid,-1:
+Unpaid,2:Cancel;3:
+Obsolete;4:Partial
+unsubscribe;Integer
+renewal Renewal
+OrderY Boolean
+mainOrderNumMainOrder
+OrderNumberYIftheorderisrenewed,
+theordernumberofthe
+mainorderwillbereturnedStirng
+startDate startdateY String
+endDate enddateY String
+outerOrderidExternalorder
+numberY String
+outerItemIdExternalline
+itemnumberY String
+renew Renewal
+orderY0:Mainorder1:Renewal
+orderInteger
+priceId Package
+PriceIdY Integer
+renewOrderNumRenewal
+OrderNumber
+SetYIfthemainorderhasa
+renewalorder,thenumber
+setoftherenewalorder
+willbereturnedList<Str
+ing>
+cardApiDtoListEsim
+Information
+SetY List<Car
+dApiDto>
+ReturnFormatCardApiDtoFieldProperties
+
+
+===== PAGE 37 =====
+
+~34~
+FieldnamedescriptionMan
+dat
+oryRemark Typesof
+data FlowdataY2GB String
+validity Validdaysof
+packageY Integer
+sm_dp_addresssm-dp+
+addressY String
+activationCode Y String
+mobileNumberEsimnumberY String
+iccid ICCID Y String
+activateBeforeLatest
+activation
+timeY2022-11-25 String
+code UsagecodeYAndroidphonesusethis
+codetoregisteresimString
+usedMB UsageMBYPackagedaydateordersare
+notsupportedString
+startDate StartDateY String
+endDate EnddateY String
+pdfUrl pdflinkY String
+dpId Y Integer
+2.6.5ReturnForm
+success：
+{
+"code":"0",
+"message":"success",
+"data":{
+"orderNum":"EP20221104000005",
+"display":"Japan",
+
+
+===== PAGE 38 =====
+
+~35~
+"purchaseDate":"2022-11-04(GMT+8)",
+"count":1,
+"price":"4.49",
+"status":0,
+"renewal":false,
+"mainOrderNum":null,
+“renew”:0,
+“priceId”:9726,
+"renewOrderNum":[],
+"cardApiDtoList":[
+{
+"data":"2GB",
+"validity":5,
+"sm_dp_address":"ais.prod.ondemandconnectivity.com",
+"activationCode":"SEW7JEBMFGPRVSPD",
+"mobileNumber":"0846108923",
+"iccid":"453438306768957400",
+"activateBefore":"2022-11-25",
+"code":
+"LPA:1$ais.prod.ondemandconnectivity.com$SEW7JEBMFGPRVSPD",
+“dpId”:9,
+"dpStatus":null,
+"eid":null
+}
+]
+}
+}
+fail：
+{"code":-2,"message":"paramsisnotnull","data":""}
+{"code":-3,"message":"getfail","data":""}
+
+
+===== PAGE 39 =====
+
+~36~
+
+
+===== PAGE 40 =====
+
+~37~
+2.7QuerytheeSIMorderlist
+2.7.1InterfaceDescription
+GetthelistinformationofeSIMordersaccordingtothequerypageandquery
+quantity
+2.7.2Interfaceconstraints
+No.FieldnameTypes
+ofIs
+emp
+tydescription Examples
+1 token StringNo
+2 startDateStringNoThestarttimeisbased
+ontheordercreation
+time2022-10-01
+3 endDateStringNoTheendtimeisbased
+ontheordercreation
+time2022-11-20
+4 outerOrderIdStringYesExternalordernumber
+5 outerItemIdStringYesExternallineitem
+number
+6 sign StringNoParametersignature
+7 pageSizeIntegerNoQuantityreturnedper
+page,10bydefault
+2.7.3Interfacename
+Production：https://bpm.roamwifi.hk/api_esim/queryOrder
+
+
+===== PAGE 41 =====
+
+~38~
+2.7.4Returnconstraints
+No.Fieldname TypesofIs
+empt
+ydescription
+1code StringNoresponsestatus
+2message StringNoresponsemessage
+3data StringNoresponsedata
+Thecontentdata
+FieldnamedescriptionMan
+dat
+oryRemark Typesof
+total TotalOrdersY Integer
+page Current
+PagesY Integer
+rows OrderData
+SetY List<
+eSimOrde
+rDto>
+ReturnFormateSimOrderDtoFieldProperties
+FieldnamedescriptionMan
+dat
+oryRemark Typesof
+id OrderIdY Integer
+orderid OrderNoY String
+orderType OrderTypeY0:BPMOrder、1:interface
+Order；2：saleOrderInteger
+num Order
+quantityY Integer
+price UnitPriceY String
+totle TotalpriceY String
+subTime Order
+creation
+timeY"2022-11-0716:43:19"String
+
+
+===== PAGE 42 =====
+
+~39~
+status Status Y0:Normal,paid,-1:
+Unpaid,2:Cancel;3:
+Obsolete;4:Partial
+unsubscribe;Integer
+dNum amountof
+downloadsNullmeansnotdownloaded
+flowType RenewableY0-yes，1-no Integer
+otype String
+ostatus String
+count String
+pflag IfMainorderY Boolean
+packetNamePackagenameYJapan String
+expireDatePackage
+expiration
+timeY"2023-02-07" String
+daypassDayNumberof
+daystoplace
+anorderfora
+packagedayY Integer
+renew Renewal
+orderY0:Mainorder1:Renewal
+orderInteger
+outerOrderidExternalorder
+numberY String
+outerItemIdExternalline
+itemnumberY String
+2.7.5ReturnForm
+success：
+{
+"code":"0",
+"message":"success",
+"data":{
+"total":154,
+
+
+===== PAGE 43 =====
+
+~40~
+"page":2,
+"rows":[
+{
+"id":258,
+"orderid":"EP20220906000002",
+"orderType":0,
+"num":1,
+"price":"15.00",
+"totle":"15.00",
+"subTime":"2022-09-0610:21:29",
+"status":0,
+"dNum":"1",
+"flowType":"1",
+"downpass":"625365",
+"pflag":false,
+“renew”:0,
+“outerOrderId”:”xxxxxxxxx”,
+“outerItemId”:”xxxxxxxxx”
+},
+{
+"id":257,
+"orderid":"EP20220906000001",
+"orderType":0,
+"num":3,
+"sTime":"",
+"eTime":"",
+"price":"15.00",
+"totle":"45.00",
+"subTime":"2022-09-0610:16:08",
+"status":2,
+"dNum":"",
+
+
+===== PAGE 44 =====
+
+~41~
+"flowType":"1",
+"downpass":"",
+"otype":null,
+"ostatus":null,
+"count":null,
+"pflag":false,
+"packetName":null,
+"expireDate":null,
+“renew”:1,
+“outerOrderId”:”xxxxxxxxx”,
+“outerItemId”:”xxxxxxxxx”
+}
+]
+}
+}
+fail：
+{"code":-2,"message":"paramsisnotnull","data":""}
+{"code":-3,"message":"ordernotsupportrenew","data":""}
+
+
+===== PAGE 45 =====
+
+~42~
+2.8Verifyresources
+2.8.1InterfaceDescription
+Checkwhethercardresourcesaresufficientbasedonskuidandpriceid.
+2.8.2Interfaceconstraints
+No.FieldnameTypes
+ofIs
+empt
+ydescription Examples
+1 token StringNo
+2 skuid StringNoskuencoding
+3 priceidStringNopriceencoding
+4 count StringNoOrderquantity
+5 sign StringNoParameter
+signature
+2.8.3Interfacename
+Production：https://bpm.roamwifi.hk/api_esim/verifyResource
+2.8.4Returnconstraints
+No.Fieldname TypesofIs
+empt
+ydescription
+1code StringNoresponsestatus
+2message StringNoresponsemessage
+3data StringNoresponsedata
+
+
+===== PAGE 46 =====
+
+~43~
+2.8.5ReturnForm
+success：
+Adequateresources
+{
+"code":"0",
+"message":"success",
+"data":1
+}
+Lackofresources
+{
+"code":"0",
+"message":"success",
+"data":0
+}fail：
+{"code":-1,"message":"tokenexpire","data":""}
+{"code":-2,"message":"paramsisnotnull","data":""}
+{"code":3,"message":"datanotexist","data":""}
+{
+"code":-30,
+"message":"signwrong",
+"data":"signwrong"
+}
+
+
+===== PAGE 47 =====
+
+~44~
+2.9GettheeSIMcardinformationoftheorder
+2.9.1InterfaceDescription
+Obtainthecardinformationoftheorderbasedontheordernumber,andreturn
+differentdataformatsbasedondifferentparameters..
+2.9.2Interfaceconstraints
+No.FieldnameTypes
+ofIs
+empt
+ydescription Examples
+1 token StringNo
+2 orderNumStringNo
+3 backInfoStringYes0/NULLreturnsthe
+ordernumber
+1.Returntoorder
+details
+2.Returnthe
+PDF-URL
+informationofthe
+order
+4 sign StringNoParameter
+signature
+2.9.3Interfacename
+Production：https://bpm.roamwifi.hk/api_esim/reDownOrderPDF
+2.9.4Returnconstraints
+No.Fieldname TypesofIsdescription
+
+
+===== PAGE 48 =====
+
+~45~
+empt
+y
+1code StringNoresponsestatus
+2message StringNoresponsemessage
+3data StringNoresponsedata
+Thecontentdata
+FieldnamedescriptionMan
+dat
+oryRemark Typesof
+orderNum OrderNoY String
+display DisplaynameY String
+purchaseDateOrdertimeY String
+count Order
+quantityY String
+price totalpriceY
+status OrderstatusY0:Normal,paid,-1:
+Unpaid,2:Cancel;3:
+Obsolete;4:Partial
+unsubscribe;Integer
+renewal Renewal
+OrderY Boolean
+mainOrderNumMainOrder
+OrderNumberYIftheorderisrenewed,
+theordernumberofthe
+mainorderwillbereturnedStirng
+starDate startdateY String
+endDate enddateY String
+outerOrderidExternalorder
+numberY String
+outerItemIdExternalline
+itemnumberY String
+renewOrderNumRenewal
+OrderNumber
+SetYIfthemainorderhasa
+renewalorder,thenumber
+setoftherenewalorderList<Str
+ing>
+
+
+===== PAGE 49 =====
+
+~46~
+willbereturned
+cardApiDtoListEsim
+Information
+SetY List<
+EsimOrde
+rCardApi
+Dto>
+ReturnFormatEsimOrderCardApiDtoFieldProperties
+FieldnamedescriptionMan
+dat
+oryRemark Typesof
+data FlowdataY2GB String
+validity Validdaysof
+packageY Integer
+sm_dp_addresssm-dp+
+addressY String
+activationCode Y String
+mobileNumberEsimnumberY String
+iccid ICCID Y String
+activateBeforeLatest
+activation
+timeY2022-11-25 String
+code UsagecodeYAndroidphonesusethis
+codetoregisteresimString
+usedMB UsageMBYPackagedaydateordersare
+notsupportedString
+startDate StartDateY String
+endDate EnddateY String
+pdfUrl pdflinkY String
+dpId Y Integer
+dpStatus Y String
+eid Y String
+apn APN Y String
+
+
+===== PAGE 50 =====
+
+~47~
+2.9.5ReturnForm
+success：
+{
+"code":"0",
+"message":"success",
+"data":"EP20221104000005"
+}
+{
+"code":"0",
+"message":"success",
+"data":{
+"orderNum":"EP20240111000002",
+"display":"Global125countries",
+"purchaseDate":"2024-01-11(GMT+8)",
+"count":1,
+"price":"22.49",
+"status":0,
+"renewal":true,
+"mainOrderNum":null,
+"startDate":null,
+"endDate":null,
+"outerOrderid":null,
+"outerItemId":null,
+"renewOrderNum":[],
+"cardApiDtoList":[
+{
+"data":"6GB",
+"validity":15,
+"sm_dp_address":"rsp-eu.redteamobile.com",
+"activationCode":"5CB2378D93664F30B21A48008F80B64E",
+"mobileNumber":"0659011389",
+
+
+===== PAGE 51 =====
+
+~48~
+"iccid":"2330020025190",
+"activateBefore":"2024-06-22(GMT+8)",
+"code":
+"LPA:1$rsp-eu.redteamobile.com$5CB2378D93664F30B21A48008F80B64E",
+"usedMB":"0.0",
+"startDate":null,
+"endDate":null,
+"pdfUrl":null,
+“dpId”:9,
+"dpStatus":null,
+"eid":null,
+“apn”:"plus"
+}
+]
+}
+}
+{
+"code":"0",
+"message":"success",
+"data":{
+"orderNum":"EP20240119000007",
+"display":"Qatar",
+"purchaseDate":"2024-01-19(GMT+8)",
+"count":1,
+"price":"9.89",
+"status":0,
+"renewal":false,
+"mainOrderNum":null,
+"startDate":null,
+"endDate":null,
+
+
+===== PAGE 52 =====
+
+~49~
+"outerOrderid":null,
+"outerItemId":null,
+"renewOrderNum":[],
+"cardApiDtoList":[
+{
+"data":"6GB",
+"validity":8,
+"sm_dp_address":"ais.prod.ondemandconnectivity.com",
+"activationCode":"SEW7JEBMFGPRVSPD",
+"mobileNumber":"0849802807",
+"iccid":"694386261666443800",
+"activateBefore":"2024-02-19(GMT+8)",
+"code":
+"LPA:1$ais.prod.ondemandconnectivity.com$SEW7JEBMFGPRVSPD",
+"usedMB":"0.00",
+"startDate":null,
+"endDate":null,
+"pdfUrl":
+"http://img.roamwifi.com/phoneImage/202401//8b2755d1-34ac-42ea-8816-30417e2452
+02.pdf",
+“dpId”:9,
+"dpStatus":null,
+"eid":null,
+“apn”:"plus"
+}
+]
+}
+}
+fail：
+
+
+===== PAGE 53 =====
+
+~50~
+{"code":-1,"message":"tokenexpire","data":""}
+{"code":-2,"message":"paramsisnotnull","data":""}
+{"code":-3,"message":"reDownOrderPDFfail","data":""}
+{"code":3,"message":"datanotexist","data":""}
+{"code":4,"message":"OrderStatusAbnormal","data":""}
+{
+"code":-30,
+"message":"signwrong",
+"data":"signwrong"
+}
+
+
+===== PAGE 54 =====
+
+~51~
+2.10SendPDFemail
+2.10.1InterfaceDescription
+SpecifytheordernumberandassociatedcardtosendaPDFemailtothe
+specifiedemailaddress.
+2.10.2Interfaceconstraints
+No.FieldnameTypes
+ofIs
+empt
+ydescription Examples
+1 token StringNo
+2 type StringNoemail:sendemail
+link:Returnto
+downloadlink
+3 orderIdStringNoordernumber
+4 iccidsStringYesEmpty:Returnsall
+cardsassociated
+withtheorder;
+specifyiccid,
+multipleiccidsare
+available,splicing
+5 email StringYesMail
+6 saveType Integ
+erYes0/NULL:Donot
+savetheemail
+address
+1:Savetheemail
+(theexistingemail
+
+
+===== PAGE 55 =====
+
+~52~
+willbereplaced)
+7 sign StringNoParameter
+signature
+2.10.3Interfacename
+Production：https://bpm.roamwifi.hk/api_esim/handlerEsimPdf
+2.10.4Returnconstraints
+No.Fieldname TypesofIs
+empt
+ydescription
+1code StringNoresponsestatus
+2message StringNoresponsemessage
+3data StringNoresponsedata
+2.10.5ReturnForm
+success：
+{
+"code":"0",
+"message":"Successfulreturnofpdflink",
+"data":{
+"9000024041590216":
+"http://img.roamwifi.com/phoneImage/202404//5072a173-a360-49e5-9be1-ff93e0bd48
+0b.pdf",
+"9000024041549678":
+"http://img.roamwifi.com/phoneImage/202404//1852e23a-8f1a-4aed-9195-b654b44b11
+59.pdf"
+}
+}
+
+
+===== PAGE 56 =====
+
+~53~
+{
+"code":"0",
+"message":"PDFhasbeensenttotheemail",
+"data":null
+}
+fail：
+{"code":-1,"message":"tokenexpire","data":""}
+{"code":-2,"message":"paramsisnotnull","data":""}
+{"code":-3,"message":"Formatmismatch","data":""}
+{"code":3,"message":"datanotexist","data":""}
+{"code":4,"message":"OrderStatusAbnormal","data":""}
+{"code":-30,"message":"signwrong","data":"signwrong"}
+{"code":99,"message":"PdfUrlgenerationfailureforesim","data":""}
+{"code":99,"message":"order4574notexist","data":""}
+{"code":99,"message":"order4574noself","data":""}
+{"code":99,"message":"Cannotdownloadinabnormalstate","data":""}
+{"code":99,"message":"orderdetail4574notexist","data":""}
+{"code":99,"message":"esim9000024041549678notexist","data":""}
+{"code":99,"message":"DPUrlparsingfailureforesim","data":""}
+{"code":99,"message":"pdfUrluploadfailed","data":""}
+{"code":99,"message":"Temporaryfileexception","data":""}
+
+
+===== PAGE 57 =====
+
+~54~
+2.11UnsubscribefromSIMcardorder(supports:eSIMand
+physicalSIMcards)
+2.11.1InterfaceDescription
+UnsubscribefromSIMcardorderbasedontheordernumberandICCID
+(supports:eSIMandphysicalSIMcards).
+2.11.2Interfaceconstraints
+No.FieldnameTypes
+ofIs
+empt
+ydescription Examples
+1 token StringNo
+2 orderNumStringNoordernumber
+3 iccidsStringNoiccid,usedfor
+multipleiccid,
+separated
+4 remarkStringYesremark
+5 sign StringNoParametersignature
+2.11.3Interfacename
+Production：https://bpm.roamwifi.hk/api_esim/refundOrder
+2.11.4Returnconstraints
+No.Fieldname TypesofIsemptydescription
+1code StringNoresponsestatus
+2message StringNoresponsemessage
+
+
+===== PAGE 58 =====
+
+~55~
+3data StringNoresponsedata
+2.11.5ReturnForm
+success：
+{
+"code":"0",
+"message":"success",
+"data":null
+}
+fail：
+{"code":-1,"message":"tokenexpire","data":""}
+{"code":-2,"message":"paramsisnotnull","data":""}
+{"code":3,"message":"datanotexist","data":""}
+{"code":22,"message":"Non-personalorders","data":""}
+{
+"code":-30,
+"message":"signwrong",
+"data":"signwrong"
+}
+
+
+===== PAGE 59 =====
+
+~56~
+2.12SIMrenewal(supports:eSIMandphysicalSIMcard
+renewal)
+2.12.1InterfaceDescription
+RenewtheplanbasedontheordernumberandICCID(supports:eSIMand
+physicalSIMcards).
+2.12.2Interfaceconstraints
+No.FieldnameTypesofIsemptydescription Examples
+1 token StringNo
+2 orderNumStringYesorderNum,andiccidcannot
+beemptyatthesametime.
+3 iccid StringYesorderNum,andiccidcannot
+beemptyatthesametime.
+4 daypassDaysStringYesThenumberofdaysto
+placeanorderfora
+package;thisfieldisnot
+emptywhenthepackage
+listinterfacegets
+supportDaypass=1;
+5 skuId StringNo ProductID
+6 priceIdStringNoPackagepriceID
+7 remarkStringYesRemarkinformation
+8 otherOrderIdStringYesExternalplatformorderID
+9 otherItemIdStringYesExternalplatformlineitem
+ID
+10 otherPriceStringYesExternalplatformunitprice
+
+
+===== PAGE 60 =====
+
+~57~
+11 backInfoStringYes0/NULLreturnstheorder
+number
+1.Returntoorderdetails
+2.ReturnsthePDF-URL
+informationoftheorder
+12 pdfLanguageStringNopdflanguage(refertothe
+languagecodeinAppendix
+3.2.Ifitisnotinthe
+appendix,Englishwillbe
+usedbydefault)
+13 sign StringNoParametersignature
+2.12.3Interfacename
+Production：https://bpm.roamwifi.hk/api_esim/renewCard
+2.12.4Returnconstraints
+No.Fieldname TypesofIs
+empt
+ydescription
+1code StringNoresponsestatus
+2message StringNoresponsemessage
+3data StringNoOrderNo
+Thecontentdata
+FieldnamedescriptionMan
+dat
+oryRemark Typesof
+orderNum OrderNoY String
+display DisplaynameY String
+purchaseDateOrdertimeY String
+
+
+===== PAGE 61 =====
+
+~58~
+count Order
+quantityY String
+price totalpriceY
+status OrderstatusY0:Normal,paid,-1:
+Unpaid,2:Cancel;3:
+Obsolete;4:Partial
+unsubscribe;Integer
+renewal Renewal
+OrderY Boolean
+mainOrderNumMainOrder
+OrderNumberYIftheorderisrenewed,
+theordernumberofthe
+mainorderwillbereturnedStirng
+starDate startdateY String
+endDate enddateY String
+outerOrderidExternalorder
+numberY String
+outerItemIdExternalline
+itemnumberY String
+renew Renewal
+orderY0:Mainorder1:Renewal
+orderInteger
+priceId Package
+priceIDY Integer
+renewOrderNumRenewal
+OrderNumber
+SetYIfthemainorderhasa
+renewalorder,thenumber
+setoftherenewalorder
+willbereturnedList<Str
+ing>
+cardApiDtoListEsim
+Information
+SetY List<
+EsimOrde
+rCardApi
+Dto>
+ReturnFormatEsimOrderCardApiDtoFieldProperties
+FieldnamedescriptionMan
+dat
+oryRemark Typesof
+data FlowdataY2GB String
+
+
+===== PAGE 62 =====
+
+~59~
+validity Validdaysof
+packageY Integer
+sm_dp_addresssm-dp+
+addressY String
+activationCode Y String
+mobileNumberEsimnumberY String
+iccid ICCID Y String
+activateBeforeLatest
+activation
+timeY2022-11-25 String
+code UsagecodeYAndroidphonesusethis
+codetoregisteresimString
+usedMB UsageMBYPackagedaydateordersare
+notsupportedString
+startDate StartDateY String
+endDate EnddateY String
+pdfUrl pdflinkY String
+dpId Y Integer
+dpStatus Y String
+eid Y String
+apn APN Y String
+2.12.5ReturnForm
+success：
+{
+"code":"0",
+"message":"success",
+"data":"EP20221104000005"
+}
+{
+"code":"0",
+"message":"success",
+
+
+===== PAGE 63 =====
+
+~60~
+"data":{
+"orderNum":"EP20240124000013",
+"display":"Australia",
+"purchaseDate":"2024-01-24(GMT+8)",
+"count":1,
+"price":"9.89",
+"status":0,
+"renewal":true,
+"mainOrderNum":null,
+"startDate":null,
+"endDate":null,
+"outerOrderid":"",
+"outerItemId":"",
+“renew”:0,
+“priceId”:9726,
+"renewOrderNum":[],
+"cardApiDtoList":[
+{
+"data":"6GB",
+"validity":8,
+"sm_dp_address":"ais.prod.ondemandconnectivity.com",
+"activationCode":"SEW7JEBMFGPRVSPD",
+"mobileNumber":"0841823354",
+"iccid":"934801019851134300",
+"activateBefore":"2024-02-24(GMT+8)",
+"code":
+"LPA:1$ais.prod.ondemandconnectivity.com$SEW7JEBMFGPRVSPD",
+"usedMB":"0.0",
+"startDate":null,
+"endDate":null,
+"pdfUrl":null,
+
+
+===== PAGE 64 =====
+
+~61~
+“dpId”:9,
+"dpStatus":null,
+"eid":null,
+“apn”:"plus"
+}
+]
+}
+}
+{
+"code":"0",
+"message":"success",
+"data":{
+"orderNum":"EP20240124000014",
+"display":"Australia",
+"purchaseDate":"2024-01-24(GMT+8)",
+"count":1,
+"price":"9.89",
+"status":0,
+"renewal":false,
+"mainOrderNum":null,
+"startDate":null,
+"endDate":null,
+"outerOrderid":"",
+"outerItemId":"",
+“renew”:1,
+“priceId”:9727,
+"renewOrderNum":[],
+"cardApiDtoList":[
+{
+"data":"6GB",
+
+
+===== PAGE 65 =====
+
+~62~
+"validity":8,
+"sm_dp_address":"ais.prod.ondemandconnectivity.com",
+"activationCode":"SEW7JEBMFGPRVSPD",
+"mobileNumber":"0848735511",
+"iccid":"162984356292255940",
+"activateBefore":"2024-02-24(GMT+8)",
+"code":
+"LPA:1$ais.prod.ondemandconnectivity.com$SEW7JEBMFGPRVSPD",
+"usedMB":"0.00",
+"startDate":null,
+"endDate":null,
+"pdfUrl":
+"http://img.roamwifi.com/phoneImage/202401//8bd384ba-729d-4d12-bc2e-b1f6908f07
+4b.pdf",
+“dpId”:9,
+"dpStatus":null,
+"eid":null,
+“apn”:"plus"
+}
+]
+}
+}
+fail：
+{"code":-2,"message":"paramsisnotnull","data":""}
+{"code":-3,"message":"datanotexist","data":""}
+
+
+===== PAGE 66 =====
+
+~63~
+2.13PhysicalSIM-GetsupportedphysicalSIMDP
+information
+2.13.1InterfaceDescription
+GetsupportedphysicalSIMDPinformation.
+2.13.2Interfaceconstraints
+No.FieldnameTypesofIsemptydescription
+1 tokenStringNo
+2 signStringNo Parametersignature
+2.13.3Interfacename
+Production：https://bpm.roamwifi.hk/api_esim/getPhysicalSIMDpInfo
+2.13.4Returnconstraints
+No.Fieldname TypesofIsemptydescription
+1code StringNoresponsestatus
+2message StringNoresponsemessage
+3data StringNoDPinfoList:
+List<EsimRealOperatorDt
+o>
+ReturnFormatEsimRealOperatorDtoFieldAttributes
+Fieldnamedescription remark Typesof
+id DPID Integer
+realName name String
+iconUrl Showpicture String
+
+
+===== PAGE 67 =====
+
+~64~
+address
+2.13.5ReturnForm
+success：
+{
+"code":"0",
+"message":"success",
+"data":[
+{
+"id":9,
+"realName":"FIROAMGLOBAL",
+"iconUrl":
+"http://img.roamwifi.com/phoneImage/202405//a9675e73-bd22-4b1a-a1da-0d964f422b
+a2.jpg"
+}
+]
+}
+
+
+===== PAGE 68 =====
+
+~65~
+2.14PhysicalSIM-GetinformationaboutSKUs
+supportedbyDP
+2.14.1InterfaceDescription
+GetinformationaboutSKUssupportedbyDP.
+2.14.2Interfaceconstraints
+No.FieldnameTypesofIsemptydescription Example
+1 tokenStringN
+2 dpIdIntegerN2.12getthedpid.
+3 signStringNParametersignature
+2.14.3Interfacename
+Production：https://bpm.roamwifi.hk/api_esim/getDpSupportSkuInfo
+2.14.4Returnconstraints
+No.Fieldname TypesofIsemptydescription
+1code StringNoresponsestatus
+2message StringNoresponsemessage
+3data StringNoSkuList
+datafieldattributes
+Fieldname description Typesof
+skuid Uniqueidentifierforsku Integer
+display skudisplayname String
+
+
+===== PAGE 69 =====
+
+~66~
+countryCodeCountrycode String
+2.14.5ReturnForm
+success：
+{
+"code":"0",
+"message":"success",
+"data":[
+{
+"skuid":124,
+"display":"Asia30",
+"countryCode":"99115"
+},
+{
+"skuid":123,
+"display":"Asia4",
+"countryCode":"99112"
+},
+……
+]
+}
+
+
+===== PAGE 70 =====
+
+~67~
+2.15PhysicalSIM-GetinformationaboutSKUs
+supportedbyDP-groupedbycontinent
+2.15.1InterfaceDescription
+GetinformationaboutSKUssupportedbyDP-groupedbycontinent.
+2.15.2Interfaceconstraints
+No.FieldnameTypesofIsemptydescription
+1 token String No
+2 dpId IntegerNo 2.12getthedpid
+3 sign String No Parametersignature
+2.15.3Interfacenam
+Production：https://bpm.roamwifi.hk/api_esim/getDpSupportSkuInfoByGroup
+2.15.4Returnconstraints
+No.Fieldname TypesofIsemptydescription
+1code StringNoresponsestatus
+2message StringNoresponsemessage
+3data StringNoSKUmap:Map<String,
+List<BpmESIMSkuNewDt
+o>>
+Keyvalueforgroupinginformationdetails:
+Key description
+
+
+===== PAGE 71 =====
+
+~68~
+Common GenericregionorcountrySKUs,whereSKUswillcontain
+multiplecountries
+Asia SKUsforcountriesorregionsinAsia
+Europe SKUsforcountriesorregionsinEurope
+Africa SKUsforcountriesorregionsinAfrica
+LatinAmericaSKUsforcountriesorregionsinLatinAmerica
+NorthAmericaSKUsforcountriesorregionsinNorthAmerica
+Oceania SKUsforcountriesorregionsinOceania
+ReturnstheBpmESIMSkuNewDtopropertyoftheFormatValuefield.
+Fieldname description Typesof
+skuid Uniqueidentifierfor
+skuString
+countrycode CountryCode String
+imageUrl Imageaddress String
+display SKUname String
+note SKUdiscription String
+search SKUsearchcriteriaString
+continentCode continentnumber String
+2.15.5ReturnForm
+success：
+{
+"code":"0",
+"message":"success",
+"data":{
+"Common":[
+{
+"skuid":156,
+"countryCode":99918,
+
+
+===== PAGE 72 =====
+
+~69~
+"imageUrl":
+"http://img.roamwifi.com/phoneImage/202009//ec149df0-e4af-478e-8808-1b5c77e6f9b
+4.jpg",
+"display":"Africa",
+"note":null,
+"search":"Algeria,Republicofthe
+Congo,DRC,Ghana,Gabon,Kenya,Reunion,Madagascar,Malawi,Morocco,Nigeria,Tanzania,T
+unisia,Uganda,Chad",
+"continentCode":7
+},
+......
+],
+"Asia":[
+{
+"skuid":40,
+"countryCode":158,
+"imageUrl":
+"http://img.roamwifi.com/phoneImage/202009//5d1441b1-ff81-4104-812a-31124ccb45
+5c.jpg",
+"display":"China.Taiwan",
+"note":null,
+"search":"China.Taiwan",
+"continentCode":1
+},
+......
+],
+......
+}
+}
+
+
+===== PAGE 73 =====
+
+~70~
+2.16PhysicalSIM-Getthelistofsupportedpackages
+basedondpIdandskuId
+2.16.1InterfaceDescription
+GetthelistofsupportedpackagesbasedondpIdandskuId.
+2.16.2Interfaceconstraints
+No.FieldnameTypesofIsemptydescription
+1 token StringNo
+2 dpId IntegerNo 2.12getthedpid
+3 skuId StringNo Uniqueidentifierforsku
+4 sign StringNo Parametersignature
+2.16.3Interfacename
+Production：https://bpm.roamwifi.hk/api_esim/getDpSkuSupportPackageInfo
+2.16.4Returnconstraints
+No.Fieldname TypesofIsemptydescription
+1code StringNoresponsestatus
+2message StringNoresponsemessage
+3data StringNoresponsedata
+datafieldattributes
+Fieldname description Typesof
+skuid UniqueidentifierforskuString
+detailId Integer
+
+
+===== PAGE 74 =====
+
+~71~
+countrycode CountryCode String
+imageUrl Imageaddress String
+display SKUChineseName String
+displayEn SKUEnglishName String
+esimPackageVoListDetailedPackageCollectionList<EsimPackageVo>
+expirydate expirydate Date
+countryImageUrlDtoLi
+stListofcountryicon
+informationList<CountryImageUr
+lDto>
+ReturnFormatEsimPackageVoFieldAttributes
+Fieldname description Typesof
+flows Numberofpackagetraffic Integer
+days NumberofdaysthepackageisvalidInteger
+unit unitofflow:GB/MB String
+price PackagePrice Double
+priceid PackageUniqueIdentificationInteger
+flowType Renewableornot:0-Yes,1-NoInteger
+showName Packagename String
+pid Integer
+premark PackageDescriptionInfo String
+networkVos networksupport List<NetworkVo>
+supportDaypassPackageType:0-NormalPackage，
+1-DaypassPackage,2-Enumeration
+packagesInteger
+openCardFee openingfee Integer
+minDay Minimumnumberofdays,PackageType
+=2,requiredfieldInteger
+singleDiscountDayNumberofdaysforsinglediscountInteger
+singleDiscountSingleDiscount Integer
+maxDiscount MaximumDiscount Integer
+
+
+===== PAGE 75 =====
+
+~72~
+maxDay Maximumnumberofdays Integer
+mustDate Daterequired:1-Required Integer
+apiCpde UniqueidentifierforthepackageY
+ReturnFormatCountryImageUrlDtoFieldProperties
+Fieldname description Typesof
+imageUrl Countryiconaddress String
+countrycode CountryCode Integer
+name name String
+nameEn EnglishName String
+ReturnFormatNetworkVoFieldProperties
+Fieldname description Typesof
+type Networktype:0-3G1-LTE2-5GString
+operator operator String
+namecn name String
+countryCode CountryCode Integer
+2.16.5ReturnForm
+success：
+{
+"code":"0",
+"message":"success",
+"data":{
+"skuid":34,
+"detailId":null,
+"countrycode":"586",
+"imageUrl":
+"http://img.roamwifi.com/phoneImage/202009//0cb39400-da92-4048-a14d-d1e3c540cb
+
+
+===== PAGE 76 =====
+
+~73~
+d5.jpg",
+"display":"巴基斯坦",
+"displayEn":"Pakistan",
+"esimPackageVoList":[
+{
+"flows":1,
+"days":3,
+"unit":"GB",
+"price":1.43,
+"priceid":6042,
+"flowType":0,
+"countryImageUrlDtoList":null,
+"showName":"1GB/3days",
+"pid":918,
+"premark":"Plantype:Dataonly<br>\nAPN:internet<br>\nActivation
+Policy:ThevalidityperiodstartswhenyouturnonroamingandtheeSIMconnectstoany
+supportednetwork.<br>\nCancellationpolicy:Ordercannotbecancelledorrefunded
+oncethe\"installeSIM\"buttonisclicked.",
+"overlay":null,
+"expireDays":null,
+"networkVos":[
+{
+"countryCode":586,
+"type":"LTE",
+"operator":"Mobilink",
+"name":"Pakistan"
+}
+],
+"supportDaypass":0,
+"openCardFee":0,
+"minDay":3,
+
+
+===== PAGE 77 =====
+
+~74~
+"singleDiscountDay":3,
+"singleDiscount":1,
+"maxDiscount":15,
+"maxDay":30,
+"mustDate":0,
+“apiCode”:”586-0-3-1-G”
+},
+......
+],
+"supportCountry":null,
+"expirydate":null,
+"countryImageUrlDtoList":[
+{
+"imageUrl":
+"http://img.roamwifi.com/phoneImage/202404//9d8145c1-49d6-43e7-a035-82bc6ff1724
+5.jpg",
+"countryCode":586,
+"name":"巴基斯坦",
+"nameEn":"Pakistan"
+}
+]
+}
+}
+
+
+===== PAGE 78 =====
+
+~75~
+2.17GetSKUssupportedbyICCID
+2.17.1InterfaceDescription
+GetSKUssupportedbyICCID.
+2.17.2Interfaceconstraints
+No.FieldnameTypes
+ofIs
+empt
+ydescription Examples
+1 token StringNo
+2 iccid StringNo
+3 sign StringNoParametersignature
+2.17.3Interfacename
+Production：https://bpm.roamwifi.hk/api_esim/getICCIDSupportSkuInfo
+2.17.4Returnconstraints
+No.Fieldname TypesofIsemptydescription
+1code StringNo responsestatus
+2message StringNo responsemessage
+3data StringNo responsedata
+Thecontentdata
+FieldnamedescriptionMan
+dat
+oryRemark Typesof
+skuid SkucodingY Integer
+display Skudisplay
+nameY String
+
+
+===== PAGE 79 =====
+
+~76~
+countryCodeCountrycodeY String
+2.17.5ReturnForm
+success：{"code":"0","message":"success",
+"data":[
+{
+"skuid":124,
+"display":"Asia30",
+"countryCode":"99115"
+},
+{
+"skuid":123,
+"display":"Asia4",
+"countryCode":"99112"
+},
+......
+]
+}
+fail：{"code":-1,"message":"tokenexpire","data":""}
+
+
+===== PAGE 80 =====
+
+~77~
+2.18GetSKUgroupssupportedbyICCID
+2.18.1InterfaceDescription
+GetSKUgroupssupportedbyICCID.
+2.18.2Interfaceconstraints
+No.FieldnameTypes
+ofIs
+empt
+ydescription Examples
+1 token StringNo
+2 iccid StringNo
+3 sign StringNoParameter
+signature
+2.18.3Interfacename
+Production：https://bpm.roamwifi.hk/api_esim/getICCIDSkuInfoByGroup
+2.18.4Returnconstraints
+No.Fieldname TypesofIs
+empt
+ydescription
+1code StringNoresponsestatus
+2message StringNoresponsemessage
+3data StringNoresponsedata
+datafieldattribute
+FieldnamedescriptionMan
+dat
+oryRemark Typesof
+
+
+===== PAGE 81 =====
+
+~78~
+continent continent
+nameY String
+data skucollectionY Map<Stri
+ng,
+List<Bpm
+ESIMSkuN
+ewDto>>
+ReturnstheBpmESIMSkuNewDtoattributeoftheformatdata.datafield
+FieldnamedescriptionMan
+dat
+oryRemark Typesof
+skuid skuencodingY String
+countrycodecountrycodeY String
+imageUrl ProducticonY String
+display Product
+ChinesenameY String
+note product
+descriptionY String
+search search
+conditionY String
+continentCodecontinent
+numberY String
+2.18.5ReturnForm
+success：
+{
+"code":"0",
+"message":"success",
+"data":{
+"continent":[
+"Common",
+
+
+===== PAGE 82 =====
+
+~79~
+"Asia",
+….,
+],
+"data":{
+"Common":[
+{
+"skuid":123,
+"countryCode":99112,
+"imageUrl":
+"http://img.roamwifi.com/phoneImage/202309//92529d82-4f15-445d-83ab-0b11bac40f
+af.jpg",
+"display":"Asia8countries",
+"note":
+"Korea,Cambodia,Malaysia,Thailand,Singapore,Indonesia,Vietnam，Japan",
+"search":
+"Korea,Cambodia,Malaysia,Japan,Thailand,Singapore,Indonesia,Vietnam",
+"continentCode":7
+},
+….]
+"Asia":[
+{
+"skuid":26,
+"countryCode":392,
+"imageUrl":
+"http://img.roamwifi.com/phoneImage/202009//0ac9086d-8ca4-4e60-b8d1-2504ca3ada
+75.jpg",
+"display":"Japan",
+"note":"Japan",
+"search":"Japan",
+"continentCode":1
+},
+
+
+===== PAGE 83 =====
+
+~80~
+…],
+…
+},
+fail：
+{"code":-1,"message":"tokenexpire","data":""}
+{
+"code":-30,
+"message":"signwrong",
+"data":"signwrong"
+}
+
+
+===== PAGE 84 =====
+
+~81~
+2.19GetthepackagedetailssupportedbytheSKU
+supportedbyICCID
+2.19.1InterfaceDescription
+GetthepackagedetailssupportedbytheSKUsupportedbyICCID
+2.19.2Interfaceconstraints
+No.FieldnameTypes
+ofIs
+empt
+ydescription Examples
+1 token StringNo
+2 iccid StringNo
+3 skuId StringNo
+4 sign StringNoParameter
+signature
+2.19.3Interfacename
+Production：https://bpm.roamwifi.hk/api_esim/getICCIDSkuSupportPackageInfo
+2.19.4Returnconstraints
+No.Fieldname TypesofIs
+empt
+ydescription
+1code StringNoresponsestatus
+2message StringNoresponsemessage
+3data StringNoresponsedata
+Thecontentdata
+
+
+===== PAGE 85 =====
+
+~82~
+FieldnamedescriptionMan
+dat
+oryRemark Typesof
+skuid Sku'scodeY String
+detailId Orderdetails
+idInteger
+countrycodeCountrycodeY String
+imageUrl Producticon String
+display Productname
+inChineseString
+displayEn Productname
+inEnglishString
+esimpackageDto
+Listesimpackage
+collectionList<Esi
+mPackage
+Dto>
+supportCountrySupported
+CountriesList<Str
+ing>
+expirydateExpiredtime Date
+countryImageUr
+lDtoListListofcountry
+icon
+informationList<Cou
+ntryImag
+eUrlDto>
+ReturnFormatEsimPackageDtoFieldProperties
+FieldnamedescriptionMan
+dat
+oryRemark Typesof
+flows Numberof
+Package
+TrafficY Integer
+days Daysof
+validityof
+packageY Integer
+unit TrafficunitYGB/MB String
+price PackagePriceY Double
+priceid Unique Y Integer
+
+
+===== PAGE 86 =====
+
+~83~
+Identification
+flowType Renewableor
+notY0-renewable,1-
+non-renewableInteger
+countryImageUr
+lDtoListListofCountry
+IconsY List<Cou
+ntryImag
+eUrlDto>
+showName DisplayNameY String
+pid Y Integer
+premark descriptiveY String
+expireDaysExpiredPolicyY0-effectiveimmediately,
+non-zero-expiresaftern
+days,or30daysamonthin
+thecaseofmonths.Integer
+networkDtoListNetwork
+SupportY List<Net
+workDto>
+supportDaypassWhetherthe
+daypackageY0-Regularpackage,
+1-Inclusivepackage，
+2-EnumpackageInteger
+openCardFeeCardOpening
+FeeY Integer
+minDay Minimum
+numberof
+daysY Integer
+singleDiscount
+DayNumberof
+daysforword
+discountY Integer
+singleDiscountWord
+DiscountY Integer
+maxDiscountMaximum
+DiscountY Integer
+maxDay Maximum
+DaysY Integer
+mustDate Daterequired
+ornotY1-Required Integer
+
+
+===== PAGE 87 =====
+
+~84~
+apiCpde Unique
+identifier
+forthe
+packageY99911-0-?-500-M-D String
+ReturnFormatCountryImageUrlDtoFieldProperties
+FieldnamedescriptionMan
+dat
+oryRemark Typesof
+imageUrl CountryIcon
+LinksY String
+countrycodeCountryCodeY Integer
+name Country
+NameY String
+nameEn Country
+Name
+(English)Y String
+ReturnFormatCountryImageUrlDtoFieldProperties
+FieldnamedescriptionMan
+dat
+oryRemark Typesof
+type NetworkTypeY0-3G1-LTE2-5G String
+operator Carrier Y String
+namecn Country
+NameY String
+nameen Country
+Name
+(English)Y String
+2.19.5ReturnForm
+success：
+{
+
+
+===== PAGE 88 =====
+
+~85~
+"code":"0",
+"message":"成功",
+"data":{
+"skuid":45,
+"detailId":null,
+"countrycode":"40",
+"imageUrl":
+"http://img.roamwifi.com/phoneImage/202009//af0c08eb-6f95-479d-843c-0638e1fc32fa
+.jpg",
+"display":"奥地利",
+"displayEn":"Austria",
+"esimPackageDtoList":[
+{
+"flows":1,
+"days":3,
+"unit":"GB",
+"price":2.66,
+"priceid":441,
+"flowType":0,
+"countryImageUrlDtoList":null,
+"showName":"",
+"pid":52,
+"premark":"Plantype:Dataonly<br>\nAPN:internet<br>\nActivation
+Policy:ThevalidityperiodstartswhenyouturnonroamingandtheeSIMconnectstoany
+supportednetwork.<br>\nCancellationpolicy:Ordercannotbecancelledorrefunded
+oncethe\"installeSIM\"buttonisclicked.",
+"overlay":1,
+"expireDays":0,
+"networkDtoList":[
+{
+"type":"LTE",
+
+
+===== PAGE 89 =====
+
+~86~
+"operator":"A1.net",
+"namecn":"奥地利",
+"nameen":"Austria"
+},
+{
+"type":"LTE",
+"operator":"Hutchison3G",
+"namecn":"奥地利",
+"nameen":"Austria"
+}
+],
+"supportDaypass":0,
+"openCardFee":0,
+"minDay":3,
+"singleDiscountDay":3,
+"singleDiscount":1,
+"maxDiscount":15,
+"maxDay":30,
+"mustDate":0,
+“apiCode”:”40-0-3-1-G”
+}
+],
+"supportCountry":[
+"Austria"
+],
+"expirydate":null,
+"countryImageUrlDtoList":[
+{
+"imageUrl":
+"http://img.roamwifi.com/phoneImage/202009//50948d3f-e32a-499e-a38e-c55ce6f9be5
+2.jpg",
+
+
+===== PAGE 90 =====
+
+~87~
+"countryCode":40,
+"name":"奥地利",
+"nameEn":"Austria"
+}
+]
+}
+}
+fail：
+{"code":-1,"message":"tokenexpire","data":""}
+{"code":-2,"message":"paramsisnotnull","data":""}
+{
+"code":-30,
+"message":"signwrong",
+"data":"signwrong"
+}
+
+
+===== PAGE 91 =====
+
+~88~
+2.20PhysicalSIM-Getthelistofsupportedpackages
+basedondpId
+2.20.1InterfaceDescription
+GetthelistofsupportedpackagesbasedondpId.
+2.20.2Interfaceconstraints
+No.FieldnameTypesofIsemptydescription
+1 token StringNo
+2 dpId IntegerNo 2.12getthedpid
+3 sign StringNo Parametersignature
+2.20.3Interfacename
+Production：https://bpm.roamwifi.hk/api_esim/getDpSupportPackageInfo
+2.20.4Returnconstraints
+No.Fieldname TypesofIsemptydescription
+1code StringNoresponsestatus
+2message StringNoresponsemessage
+3data StringNoresponsedata
+datafieldattributes
+Fieldname description Typesof
+skuid UniqueidentifierforskuString
+detailId Integer
+countrycode CountryCode String
+
+
+===== PAGE 92 =====
+
+~89~
+imageUrl Imageaddress String
+display SKUChineseName String
+displayEn SKUEnglishName String
+esimPackageVoListDetailedPackageCollectionList<EsimPackageVo>
+expirydate expirydate Date
+countryImageUrlDtoLi
+stListofcountryicon
+informationList<CountryImageUr
+lDto>
+ReturnFormatEsimPackageVoFieldAttributes
+Fieldname description Typesof
+flows Numberofpackagetraffic Integer
+days NumberofdaysthepackageisvalidInteger
+unit unitofflow:GB/MB String
+price PackagePrice Double
+priceid PackageUniqueIdentificationInteger
+flowType Renewableornot:0-Yes,1-NoInteger
+showName Packagename String
+pid Integer
+premark PackageDescriptionInfo String
+networkVos networksupport List<NetworkVo>
+supportDaypassPackageType:0-NormalPackage，
+1-DaypassPackage,2-Enumeration
+packagesInteger
+openCardFee openingfee Integer
+minDay Minimumnumberofdays,PackageType
+=2,requiredfieldInteger
+singleDiscountDayNumberofdaysforsinglediscountInteger
+singleDiscountSingleDiscount Integer
+maxDiscount MaximumDiscount Integer
+maxDay Maximumnumberofdays Integer
+
+
+===== PAGE 93 =====
+
+~90~
+mustDate Daterequired:1-Required Integer
+apiCpde UniqueidentifierforthepackageY
+ReturnFormatCountryImageUrlDtoFieldProperties
+Fieldname description Typesof
+imageUrl Countryiconaddress String
+countrycode CountryCode Integer
+name name String
+nameEn EnglishName String
+ReturnFormatNetworkVoFieldProperties
+Fieldname description Typesof
+type Networktype:0-3G1-LTE2-5GString
+operator operator String
+namecn name String
+countryCode CountryCode Integer
+2.20.5ReturnForm
+success：
+{
+"code":"0",
+"message":"success",
+"data":{
+"skuid":34,
+"detailId":null,
+"countrycode":"586",
+"imageUrl":
+"http://img.roamwifi.com/phoneImage/202009//0cb39400-da92-4048-a14d-d1e3c540cb
+d5.jpg",
+
+
+===== PAGE 94 =====
+
+~91~
+"display":"巴基斯坦",
+"displayEn":"Pakistan",
+"esimPackageVoList":[
+{
+"flows":1,
+"days":3,
+"unit":"GB",
+"price":1.43,
+"priceid":6042,
+"flowType":0,
+"countryImageUrlDtoList":null,
+"showName":"1GB/3days",
+"pid":918,
+"premark":"Plantype:Dataonly<br>\nAPN:internet<br>\nActivation
+Policy:ThevalidityperiodstartswhenyouturnonroamingandtheeSIMconnectstoany
+supportednetwork.<br>\nCancellationpolicy:Ordercannotbecancelledorrefunded
+oncethe\"installeSIM\"buttonisclicked.",
+"overlay":null,
+"expireDays":null,
+"networkVos":[
+{
+"countryCode":586,
+"type":"LTE",
+"operator":"Mobilink",
+"name":"Pakistan"
+}
+],
+"supportDaypass":0,
+"openCardFee":0,
+"minDay":3,
+"singleDiscountDay":3,
+
+
+===== PAGE 95 =====
+
+~92~
+"singleDiscount":1,
+"maxDiscount":15,
+"maxDay":30,
+"mustDate":0,
+“apiCode”:”586-0-3-1-G”
+},
+......
+],
+"supportCountry":null,
+"expirydate":null,
+"countryImageUrlDtoList":[
+{
+"imageUrl":
+"http://img.roamwifi.com/phoneImage/202404//9d8145c1-49d6-43e7-a035-82bc6ff1724
+5.jpg",
+"countryCode":586,
+"name":"巴基斯坦",
+"nameEn":"Pakistan"
+}
+]
+}
+}
+
+
+===== PAGE 96 =====
+
+~93~
+2.21GetthepackagedetailssupportedbytheICCID
+2.21.1InterfaceDescription
+GetthepackagedetailssupportedbytheICCID
+2.21.2Interfaceconstraints
+No.FieldnameTypes
+ofIs
+empt
+ydescription Examples
+1 token StringNo
+2 iccid StringNo
+3 sign StringNoParameter
+signature
+2.21.3Interfacename
+Production：https://bpm.roamwifi.hk/api_esim/getIccidSupportPackageInfo
+2.21.4Returnconstraints
+No.Fieldname TypesofIs
+empt
+ydescription
+1code StringNoresponsestatus
+2message StringNoresponsemessage
+3data StringNoresponsedata
+Thecontentdata
+FieldnamedescriptionMan
+dat
+oryRemark Typesof
+
+
+===== PAGE 97 =====
+
+~94~
+skuid Sku'scodeY String
+detailId Orderdetails
+idInteger
+countrycodeCountrycodeY String
+imageUrl Producticon String
+display Productname
+inChineseString
+displayEn Productname
+inEnglishString
+esimpackageDto
+Listesimpackage
+collectionList<Esi
+mPackage
+Dto>
+supportCountrySupported
+CountriesList<Str
+ing>
+expirydateExpiredtime Date
+countryImageUr
+lDtoListListofcountry
+icon
+informationList<Cou
+ntryImag
+eUrlDto>
+ReturnFormatEsimPackageDtoFieldProperties
+FieldnamedescriptionMan
+dat
+oryRemark Typesof
+flows Numberof
+Package
+TrafficY Integer
+days Daysof
+validityof
+packageY Integer
+unit TrafficunitYGB/MB String
+price PackagePriceY Double
+priceid Unique
+IdentificationY Integer
+flowType Renewableor
+notY0-renewable,1-
+non-renewableInteger
+
+
+===== PAGE 98 =====
+
+~95~
+countryImageUr
+lDtoListListofCountry
+IconsY List<Cou
+ntryImag
+eUrlDto>
+showName DisplayNameY String
+pid Y Integer
+premark descriptiveY String
+expireDaysExpiredPolicyY0-effectiveimmediately,
+non-zero-expiresaftern
+days,or30daysamonthin
+thecaseofmonths.Integer
+networkDtoListNetwork
+SupportY List<Net
+workDto>
+supportDaypassWhetherthe
+daypackageY0-Regularpackage,
+1-Inclusivepackage，
+2-EnumpackageInteger
+openCardFeeCardOpening
+FeeY Integer
+minDay Minimum
+numberof
+daysY Integer
+singleDiscount
+DayNumberof
+daysforword
+discountY Integer
+singleDiscountWord
+DiscountY Integer
+maxDiscountMaximum
+DiscountY Integer
+maxDay Maximum
+DaysY Integer
+mustDate Daterequired
+ornotY1-Required Integer
+apiCpde Unique
+identifier
+forthe
+packageY99911-0-?-500-M-D String
+
+
+===== PAGE 99 =====
+
+~96~
+ReturnFormatCountryImageUrlDtoFieldProperties
+FieldnamedescriptionMan
+dat
+oryRemark Typesof
+imageUrl CountryIcon
+LinksY String
+countrycodeCountryCodeY Integer
+name Country
+NameY String
+nameEn Country
+Name
+(English)Y String
+ReturnFormatCountryImageUrlDtoFieldProperties
+FieldnamedescriptionMan
+dat
+oryRemark Typesof
+type NetworkTypeY0-3G1-LTE2-5G String
+operator Carrier Y String
+namecn Country
+NameY String
+nameen Country
+Name
+(English)Y String
+2.21.5ReturnForm
+success：
+{
+"code":"0",
+"message":"success",
+"data":{
+
+
+===== PAGE 100 =====
+
+~97~
+"skuid":45,
+"detailId":null,
+"countrycode":"40",
+"imageUrl":
+"http://img.roamwifi.com/phoneImage/202009//af0c08eb-6f95-479d-843c-0638e1fc32fa
+.jpg",
+"display":"奥地利",
+"displayEn":"Austria",
+"esimPackageDtoList":[
+{
+"flows":1,
+"days":3,
+"unit":"GB",
+"price":2.66,
+"priceid":441,
+"flowType":0,
+"countryImageUrlDtoList":null,
+"showName":"",
+"pid":52,
+"premark":"Plantype:Dataonly<br>\nAPN:internet<br>\nActivation
+Policy:ThevalidityperiodstartswhenyouturnonroamingandtheeSIMconnectstoany
+supportednetwork.<br>\nCancellationpolicy:Ordercannotbecancelledorrefunded
+oncethe\"installeSIM\"buttonisclicked.",
+"overlay":1,
+"expireDays":0,
+"networkDtoList":[
+{
+"type":"LTE",
+"operator":"A1.net",
+"namecn":"奥地利",
+"nameen":"Austria"
+
+
+===== PAGE 101 =====
+
+~98~
+},
+{
+"type":"LTE",
+"operator":"Hutchison3G",
+"namecn":"奥地利",
+"nameen":"Austria"
+}
+],
+"supportDaypass":0,
+"openCardFee":0,
+"minDay":3,
+"singleDiscountDay":3,
+"singleDiscount":1,
+"maxDiscount":15,
+"maxDay":30,
+"mustDate":0,
+“apiCode”:”40-0-3-1-G”
+}
+],
+"supportCountry":[
+"Austria"
+],
+"expirydate":null,
+"countryImageUrlDtoList":[
+{
+"imageUrl":
+"http://img.roamwifi.com/phoneImage/202009//50948d3f-e32a-499e-a38e-c55ce6f9be5
+2.jpg",
+"countryCode":40,
+"name":"奥地利",
+"nameEn":"Austria"
+
+
+===== PAGE 102 =====
+
+~99~
+}
+]
+}
+}
+fail：
+{"code":-1,"message":"tokenexpire","data":""}
+{"code":-2,"message":"paramsisnotnull","data":""}
+{"code":-10,"message":"dpIdisnull","data":""}
+{
+"code":-30,
+"message":"signwrong",
+"data":"signwrong"
+}
+
+
+===== PAGE 103 =====
+
+~100~
+2.22QuerySIMCardOrderInformationList(Supports:eSIM
+andphysicalSIMcardrenewal)
+2.22.1InterfaceDescription
+RetrievetheSIMCardorderinformationlistbasedonthequeryconditionsand
+thespecifiednumberoforders.(Supports:eSIMandphysicalSIMcards).
+2.22.2Interfaceconstraints
+No.FieldnameTypes
+ofIs
+emp
+tydescription Examples
+1 token StringNo
+2 orderNumStringYesOrderNumber
+3 iccid StringYesSingleICCIDquery
+4 subTimeStringYesOrderTime(Ifall
+parametersarenotfilled
+in,thedefaultqueryis
+thetimeinthepastthree
+months)2024/12/01-20
+24/12/31
+5 statusStringYesOrderStatus(0:normal,
+paid;-1:notpaid,2:
+canceled;3:voided;4:
+partiallyunsubscribed;5:
+ended,6:unsubscribed
+inprocess,7:partially
+unsubscribedinprocess)
+6 packetNameStringYesPackageName Asia8
+7 outerOrderIdStringYesExternalOrderNumber
+
+
+===== PAGE 104 =====
+
+~101~
+8 outerItemId YesExternalOrderItem
+Number
+9 sTime YesStartTime 2024/12/01-20
+24/12/31
+10 eTime YesEndTime 2024/12/01-20
+24/12/31
+11 pageNoIntegerYesReturnPage,defaultis1
+12 pageSizeIntegerYesMaximumNumberof
+Results,defaultis30
+13 sign StringNoParameterSignature
+2.22.3Interfacename
+Production：https://bpm.roamwifi.hk/api_esim/queryEsimOrder
+2.22.4Returnconstraints
+No.Fieldname TypesofIs
+empt
+ydescription
+1code StringNoresponsestatus
+2message StringNoresponsemessage
+3data StringNoresponsedata
+Thecontentdata
+FieldnamedescriptionMan
+dat
+oryRemark Typesof
+total TotalOrdersY Integer
+page Current
+PagesY Integer
+rows OrderData
+SetY List<Esi
+mOrderAp
+
+
+===== PAGE 105 =====
+
+~102~
+iVo>
+ReturnEsimOrderApiVoFieldProperties
+FieldnamedescriptionMan
+dat
+oryRemark Typesof
+orderNum OrderNumberY String
+skuId Y Integer
+skuName SKUProduct
+NameY String
+type OrderTypeY Integer
+daypassDayDaypass
+DurationY Integer
+count QuantityY Integer
+createTimeOrderTimeY String
+status Status Y0-effectiveimmediately,
+non-zero-expiresaftern
+days,or30daysamonthin
+thecaseofmonths.Integer
+totle TotalPriceY String
+outer_orderidExternal
+OrderNumberY String
+outer_itemidExternal
+OrderItem
+IdentifierY String
+pflag MainOrder
+IdentifierYtrue-MainOrder,false-
+RenewalOrderBoolean
+flowType PackageTypeY0:Canberenewed,1:Cannot
+berenewedInteger
+renew Renewal
+OrderY0:Mainorder1:Renewal
+orderInteger
+remark Remarks Y String
+
+
+===== PAGE 106 =====
+
+~103~
+email Email Y String
+cardType CardTypeY0:eSIMCard,1:PhysicalCardInteger
+packageListPackageListY List<Ord
+erPackag
+eApiVo>
+ReturnOrderPackageApiVoProperties
+FieldnamedescriptionMan
+dat
+oryRemark Typesof
+id OrderNumberY Integer
+flows PackageData
+AmountY Integer
+unit DataUnitY String
+days Days Y Integer
+usedMb Usage Y Double
+name PackageNameY String
+beginDate StartTimeY String
+endDate EndTimeY String
+status Status Y Integer
+iccid iccid Y String
+priceId Package
+priceIDY Integer
+2.22.5ReturnForm
+success：
+{
+"code":"0",
+"message":"success",
+"data":{
+"total":1,
+"page":1,
+
+
+===== PAGE 107 =====
+
+~104~
+"rows":[
+{
+"orderNum":"EP20241224002723",
+"skuId":114,
+"skuName":"Turkey",
+"type":1,
+"daypassDay":3,
+"count":1,
+"createTime":"2024-12-2417:30:14.0",
+"status":0,
+"totle":"2.27",
+"outer_orderid":null,
+"outer_itemid":null,
+"pflag":true,
+"flowType":0,
+"remark":null,
+"email":null,
+"cardType":1,
+"renew":0,
+"packageList":[
+{
+"id":740667,
+"flows":1,
+"unit":"GB",
+"days":1,
+"usedMb":0.0,
+"name":"1GBDayPass",
+"beginDate":null,
+"endDate":null,
+"status":0,
+"iccid":"8937204017182391881",
+
+
+===== PAGE 108 =====
+
+~105~
+“priceId”:9726
+}
+]
+}
+]
+}
+}
+fail：
+{"code":-2,"message":"paramsisnotnull","data":""}
+{"code":-8,"message":"getfail","data":""}
+{"code":-30,"message":"signwrong","data":"signwrong"}
+
+
+===== PAGE 109 =====
+
+~106~
+2.23Verifyresourcesbasedonthepackage'sunique
+identificationcode
+2.23.1InterfaceDescription
+Verifywhetherthecardresourcesaresufficientbasedontheunique
+identificationcodeofthepackage.
+2.23.2Interfaceconstraints
+No.FieldnameTypes
+ofIs
+empt
+ydescription Examples
+1 token StringNo
+2 apiCodeStringNoapiCode 99162-0-3-1-G
+3 count StringNoOrderquantity
+4 sign StringNoParameter
+signature
+2.23.3Interfacename
+Production：https://bpm.roamwifi.hk/api_esim/verifyResourceByApiCode
+2.23.4Returnconstraints
+No.Fieldname TypesofIs
+empt
+ydescription
+1code StringNoresponsestatus
+2message StringNoresponsemessage
+3data StringNoresponsedata
+
+
+===== PAGE 110 =====
+
+~107~
+2.23.5ReturnForm
+success：
+Adequateresources
+{
+"code":"0",
+"message":"success",
+"data":1
+}
+Lackofresources
+{
+"code":"0",
+"message":"success",
+"data":0
+}fail：
+{"code":-1,"message":"tokenexpire","data":""}
+{"code":-2,"message":"paramsisnotnull","data":""}
+{"code":3,"message":"datanotexist","data":""}
+{
+"code":-30,
+"message":"signwrong",
+"data":"signwrong"
+}
+
+
+===== PAGE 111 =====
+
+~108~
+2.24PlaceanorderforaSIMcardbasedonthepackage's
+uniqueidentificationcode(Supports:eSIMandphysical
+cards)
+2.24.1InterfaceDescription
+Accordingtotheuniqueidentificationcodeofthepackage,placeanorderfor
+theSIMcard(Supports:eSIMandphysicalcard)anddeductthemoneyfromthe
+account.
+2.24.2Interfaceconstraints
+No.FieldnameTypesofIsemptydescription
+1 token StringNo
+2 apiCodeString Yes99162-0-3-1-G
+3 count StringNo Orderquantity
+4 beginDateStringYesPackageifthedateis
+required,thestarttimeis
+requiredintheformat:
+MM/dd/yyyy
+5 remarkStringYesRemarkinformation
+6 otherOrderIdStringYesExternalplatformorderID
+7 otherItemIdStringYesExternalplatformlineitemID
+8 otherPriceStringYesExternalplatformunitprice
+9 backInfoStringYes0/NULLreturnstheorder
+number
+1.Returntoorderdetails
+
+
+===== PAGE 112 =====
+
+~109~
+2.ReturnsthePDF-URL
+informationoftheorder
+10 sign StringNoParametersignature
+11 dpId StringYes2.13GettheDPIDofthe
+physicalcard
+12 iccidsStringYesMultipleiccidsareseparated
+bycommas,andthenumber
+iscountvalue.
+13 customerEmai
+lStringNoCustomeremailaddress(Ifit
+doesnotconformtothe
+emailaddressformat,the
+emailwillnotbesent;)
+14 isSendEmailStringNoWhethertosendemail(0/null:
+notsend,1:send)
+15 pdfLanguageStringNopdflanguage(refertothe
+languagecodeinAppendix
+3.2.Ifitisnotintheappendix,
+Englishwillbeusedby
+default)
+2.24.3Interfacename
+Production：https://bpm.roamwifi.hk/api_esim/addEsimOrderByApiCode
+2.24.4Returnconstraints
+No.Fieldname TypesofIs
+empt
+ydescription
+1code StringNoresponsestatus
+
+
+===== PAGE 113 =====
+
+~110~
+2message StringNoresponsemessage
+3data StringNoresponsedata
+Thecontentdata
+FieldnamedescriptionMan
+dat
+oryRemark Typesof
+orderNum OrderNoY String
+display DisplaynameY String
+purchaseDateOrdertimeY String
+count Order
+quantityY String
+price totalpriceY
+status OrderstatusY0:Normal,paid,-1:
+Unpaid,2:Cancel;3:
+Obsolete;4:Partial
+unsubscribe;Integer
+renewal Renewal
+OrderY Boolean
+mainOrderNumMainOrder
+OrderNumberYIftheorderisrenewed,
+theordernumberofthe
+mainorderwillbereturnedStirng
+starDate startdateY String
+endDate enddateY String
+outerOrderidExternalorder
+numberY String
+outerItemIdExternalline
+itemnumberY String
+renew Renewal
+orderY0:Mainorder1:Renewal
+orderInteger
+priceId Packageprice
+IDY Integer
+renewOrderNumRenewal
+OrderNumberYIfthemainorderhasa
+renewalorder,thenumberList<Str
+ing>
+
+
+===== PAGE 114 =====
+
+~111~
+Set setoftherenewalorder
+willbereturned
+cardApiDtoListEsim
+Information
+SetY List<
+EsimOrde
+rCardApi
+Dto>
+ReturnFormatEsimOrderCardApiDtoFieldProperties
+FieldnamedescriptionMan
+dat
+oryRemark Typesof
+data FlowdataY2GB String
+validity Validdaysof
+packageY Integer
+sm_dp_addresssm-dp+
+addressY String
+activationCode Y String
+mobileNumberEsimnumberY String
+iccid ICCID Y String
+activateBeforeLatest
+activation
+timeY2022-11-25 String
+code UsagecodeYAndroidphonesusethis
+codetoregisteresimString
+usedMB UsageMBYPackagedaydateordersare
+notsupportedString
+startDate StartDateY String
+endDate EnddateY String
+pdfUrl pdflinkY String
+dpId Y Integer
+dpStatus Y String
+eid Y String
+apn APN Y String
+
+
+===== PAGE 115 =====
+
+~112~
+2.24.5ReturnForm
+success：
+{
+"code":"0",
+"message":"success",
+"data":"EP20221104000005"
+}
+{
+"code":"0",
+"message":"success",
+"data":{
+"orderNum":"EP20240124000013",
+"display":"Australia",
+"purchaseDate":"2024-01-24(GMT+8)",
+"count":1,
+"price":"9.89",
+"status":0,
+"renewal":true,
+"mainOrderNum":null,
+"startDate":null,
+"endDate":null,
+"outerOrderid":"",
+"outerItemId":"",
+“renew”:0,
+“priceId”:9726,
+"renewOrderNum":[],
+"cardApiDtoList":[
+{
+"data":"6GB",
+"validity":8,
+
+
+===== PAGE 116 =====
+
+~113~
+"sm_dp_address":"ais.prod.ondemandconnectivity.com",
+"activationCode":"SEW7JEBMFGPRVSPD",
+"mobileNumber":"0841823354",
+"iccid":"934801019851134300",
+"activateBefore":"2024-02-24(GMT+8)",
+"code":
+"LPA:1$ais.prod.ondemandconnectivity.com$SEW7JEBMFGPRVSPD",
+"usedMB":"0.0",
+"startDate":null,
+"endDate":null,
+"pdfUrl":null,
+“dpId”:9,
+"dpStatus":null,
+"eid":null,
+“apn”:"plus"
+}
+]
+}
+}
+{
+"code":"0",
+"message":"success",
+"data":{
+"orderNum":"EP20240124000014",
+"display":"Australia",
+"purchaseDate":"2024-01-24(GMT+8)",
+"count":1,
+"price":"9.89",
+"status":0,
+"renewal":false,
+
+
+===== PAGE 117 =====
+
+~114~
+"mainOrderNum":null,
+"startDate":null,
+"endDate":null,
+"outerOrderid":"",
+"outerItemId":"",
+“renew”:1,
+“priceId”:9727,
+"renewOrderNum":[],
+"cardApiDtoList":[
+{
+"data":"6GB",
+"validity":8,
+"sm_dp_address":"ais.prod.ondemandconnectivity.com",
+"activationCode":"SEW7JEBMFGPRVSPD",
+"mobileNumber":"0848735511",
+"iccid":"162984356292255940",
+"activateBefore":"2024-02-24(GMT+8)",
+"code":
+"LPA:1$ais.prod.ondemandconnectivity.com$SEW7JEBMFGPRVSPD",
+"usedMB":"0.00",
+"startDate":null,
+"endDate":null,
+"pdfUrl":
+"http://img.roamwifi.com/phoneImage/202401//8bd384ba-729d-4d12-bc2e-b1f6908f07
+4b.pdf",
+“dpId”:9,
+"dpStatus":null,
+"eid":null,
+“apn”:"plus"
+}
+]
+
+
+===== PAGE 118 =====
+
+~115~
+}
+}
+fail：
+{"code":-2,"message":"paramsisnotnull","data":""}
+{"code":-3,"message":"datanotexist","data":""}
+{
+"code":-30,
+"message":"signwrong",
+"data":"signwrong"
+}
+
+
+===== PAGE 119 =====
+
+~116~
+2.25SIMrenewalbasedonpackageuniqueidentification
+code(support:eSIMandphysicalcardrenewal)
+2.25.1InterfaceDescription
+Renewthepackageaccordingtotheordernumberoriccidbasedonthe
+packageuniqueidentificationcode(support:eSIMandphysicalcard).
+2.25.2Interfaceconstraints
+No.FieldnameTypesofIsemptydescription Examples
+1 token StringNo
+2 orderNumStringYesorderNum,andiccidcannot
+beemptyatthesametime.
+3 iccid StringYesorderNum,andiccidcannot
+beemptyatthesametime.
+4 apiCodeStringYesapiCode 99162-0-
+3-1-G
+5 remarkStringYesRemarkinformation
+6 otherOrderIdStringYesExternalplatformorderID
+7 otherItemIdStringYesExternalplatformlineitem
+ID
+8 otherPriceStringYesExternalplatformunitprice
+9 backInfoStringYes0/NULLreturnstheorder
+number
+1.Returntoorderdetails
+2.ReturnsthePDF-URL
+informationoftheorder
+
+
+===== PAGE 120 =====
+
+~117~
+10 pdfLanguageStringNopdflanguage(refertothe
+languagecodeinAppendix
+3.2.Ifitisnotinthe
+appendix,Englishwillbe
+usedbydefault)
+11 sign StringNoParametersignature
+2.25.3Interfacename
+Production：https://bpm.roamwifi.hk/api_esim/renewCardByApiCode
+2.25.4Returnconstraints
+No.Fieldname TypesofIs
+empt
+ydescription
+1code StringNoresponsestatus
+2message StringNoresponsemessage
+3data StringNoOrderNo
+Thecontentdata
+FieldnamedescriptionMan
+dat
+oryRemark Typesof
+orderNum OrderNoY String
+display DisplaynameY String
+purchaseDateOrdertimeY String
+count Order
+quantityY String
+price totalpriceY
+status OrderstatusY0:Normal,paid,-1:
+Unpaid,2:Cancel;3:
+Obsolete;4:Partial
+unsubscribe;Integer
+
+
+===== PAGE 121 =====
+
+~118~
+renewal Renewal
+OrderY Boolean
+mainOrderNumMainOrder
+OrderNumberYIftheorderisrenewed,
+theordernumberofthe
+mainorderwillbereturnedStirng
+starDate startdateY String
+endDate enddateY String
+outerOrderidExternalorder
+numberY String
+outerItemIdExternalline
+itemnumberY String
+renew Renewal
+orderY0:Mainorder1:Renewal
+orderInteger
+priceId Package
+priceIDY Integer
+renewOrderNumRenewal
+OrderNumber
+SetYIfthemainorderhasa
+renewalorder,thenumber
+setoftherenewalorder
+willbereturnedList<Str
+ing>
+cardApiDtoListEsim
+Information
+SetY List<
+EsimOrde
+rCardApi
+Dto>
+ReturnFormatEsimOrderCardApiDtoFieldProperties
+FieldnamedescriptionMan
+dat
+oryRemark Typesof
+data FlowdataY2GB String
+validity Validdaysof
+packageY Integer
+sm_dp_addresssm-dp+
+addressY String
+activationCode Y String
+mobileNumberEsimnumberY String
+iccid ICCID Y String
+
+
+===== PAGE 122 =====
+
+~119~
+activateBeforeLatest
+activation
+timeY2022-11-25 String
+code UsagecodeYAndroidphonesusethis
+codetoregisteresimString
+usedMB UsageMBYPackagedaydateordersare
+notsupportedString
+startDate StartDateY String
+endDate EnddateY String
+pdfUrl pdflinkY String
+dpId Y Integer
+dpStatus Y String
+eid Y String
+apn APN Y String
+2.25.5ReturnForm
+success：
+{
+"code":"0",
+"message":"success",
+"data":"EP20221104000005"
+}
+{
+"code":"0",
+"message":"success",
+"data":{
+"orderNum":"EP20240124000013",
+"display":"Australia",
+"purchaseDate":"2024-01-24(GMT+8)",
+"count":1,
+"price":"9.89",
+"status":0,
+
+
+===== PAGE 123 =====
+
+~120~
+"renewal":true,
+"mainOrderNum":null,
+"startDate":null,
+"endDate":null,
+"outerOrderid":"",
+"outerItemId":"",
+“renew”:0,
+“priceId”:9726,
+"renewOrderNum":[],
+"cardApiDtoList":[
+{
+"data":"6GB",
+"validity":8,
+"sm_dp_address":"ais.prod.ondemandconnectivity.com",
+"activationCode":"SEW7JEBMFGPRVSPD",
+"mobileNumber":"0841823354",
+"iccid":"934801019851134300",
+"activateBefore":"2024-02-24(GMT+8)",
+"code":
+"LPA:1$ais.prod.ondemandconnectivity.com$SEW7JEBMFGPRVSPD",
+"usedMB":"0.0",
+"startDate":null,
+"endDate":null,
+"pdfUrl":null,
+“dpId”:9,
+"dpStatus":null,
+"eid":null,
+“apn”:"plus"
+}
+]
+}
+
+
+===== PAGE 124 =====
+
+~121~
+}
+{
+"code":"0",
+"message":"success",
+"data":{
+"orderNum":"EP20240124000014",
+"display":"Australia",
+"purchaseDate":"2024-01-24(GMT+8)",
+"count":1,
+"price":"9.89",
+"status":0,
+"renewal":false,
+"mainOrderNum":null,
+"startDate":null,
+"endDate":null,
+"outerOrderid":"",
+"outerItemId":"",
+“renew”:1,
+“priceId”:9727,
+"renewOrderNum":[],
+"cardApiDtoList":[
+{
+"data":"6GB",
+"validity":8,
+"sm_dp_address":"ais.prod.ondemandconnectivity.com",
+"activationCode":"SEW7JEBMFGPRVSPD",
+"mobileNumber":"0848735511",
+"iccid":"162984356292255940",
+"activateBefore":"2024-02-24(GMT+8)",
+"code":
+
+
+===== PAGE 125 =====
+
+~122~
+"LPA:1$ais.prod.ondemandconnectivity.com$SEW7JEBMFGPRVSPD",
+"usedMB":"0.00",
+"startDate":null,
+"endDate":null,
+"pdfUrl":
+"http://img.roamwifi.com/phoneImage/202401//8bd384ba-729d-4d12-bc2e-b1f6908f07
+4b.pdf",
+“dpId”:9,
+"dpStatus":null,
+"eid":null,
+“apn”:"plus"
+}
+]
+}
+}
+fail：
+{"code":-2,"message":"paramsisnotnull","data":""}
+{"code":-3,"message":"datanotexist","data":""}
+
+
+===== PAGE 126 =====
+
+~123~
+2.26Getaccountbalance
+2.26.1InterfaceDescription
+Getthecurrentaccountbalance
+2.26.2Interfaceconstraints
+No.FieldnameTypes
+ofIs
+empt
+ydescription Examples
+1 token StringNo
+2 sign StringNoParametersignature
+2.26.3Interfacename
+Production：https://bpm.roamwifi.hk/api_esim/getBalance
+2.26.4Returnconstraints
+No.Fieldname TypesofIsemptydescription
+1code StringNo responsestatus
+2message StringNo responsemessage
+3data StringNo responsedata
+Thecontentdata
+FieldnamedescriptionMan
+dat
+oryRemark Typesof
+balance balance Y String
+currency currencyY String
+
+
+===== PAGE 127 =====
+
+~124~
+2.26.5ReturnForm
+success：
+{
+"code":"0",
+"message":"成功",
+"data":{
+"balance":"628.49",
+"currency":"USD"
+}
+}
+fail：{"code":-1,"message":"tokenexpire","data":""}
+{
+"code":-30,
+"message":"signwrong",
+"data":"signwrong"
+}
+{
+"code":-3,
+"message":"getbalancefail",
+"data":""
+}
+
+
+===== PAGE 128 =====
+
+~125~
+3appendix
+3.1OrderformStatetable
+No.statuscode Status
+information
+1-1 Notaid
+20 Paid
+32 Cancelled
+43 Invalid
+54 Partofarefund
+65 Ended
+76 Unsubscribing
+87 Partrefundin
+process
+
+
+===== PAGE 129 =====
+
+~126~
+3.2PDFsupportsmultilinguallists
+No. Country LanguageCode
+1 English en-US
+2 中文 zh-CN
+3 繁體中文 zh-TW
+4 日本语 ja-JP
+5 Русскийязык ru-RU
+6 Español es-ES
+7 Français fr-FR
+8 한국어 ko-KR
+9 Deutsch de-DE
+10 Italiano it-IT
+11 BahasaIndonesia id-ID
+12 ​اللغةالعربية ar-SA
+13 Português pt-BR
+14 TiếngViệt vi-VN
+15 ภาษาไทย th-TH
+
+
+===== PAGE 130 =====
+
+~127~
+3.3JavaLoginDemo
+(1)Login.java
+importjava.io.UnsupportedEncodingException;
+importjava.util.ArrayList;
+importjava.util.Collections;
+importjava.util.HashMap;
+importjava.util.List;
+importjava.util.Map;
+importorg.apache.commons.codec.binary.Hex;
+importorg.apache.commons.codec.digest.DigestUtils;
+importjodd.http.HttpRequest;
+importjodd.http.HttpResponse;
+publicclassDemo{
+publicstaticvoidmain(String[]args){
+testLogin();
+}
+publicstaticStringtestLogin(){
+Map<String,Object>paramMap=newHashMap<String,Object>();
+Stringtoken="";
+paramMap.put("phonenumber","xxxxxxxxxx");
+paramMap.put("password","xxxxxxx");
+Stringsign=createSign(paramMap);
+paramMap.put("sign",sign);
+HttpResponseresponseData=HttpRequest
+.post("https://bpm.roamwifi.hk/api_order/login").form(paramMap).send();
+StringpostData=responseData.bodyText();
+JSONObjectparseObject=JSONObject.fromObject(postData);
+Stringtoken=JSONObject.fromObject(parseObject.get("data"))
+.get("token").toString();
+returntoken;
+}
+publicstaticStringcreateSign(Map<String,Object>map){
+finalStringsign_key="1234567890qwertyuiopasdfghjklzxc";
+StringBufferbuffer=newStringBuffer();
+List<String>arrayList=newArrayList<String>();
+map.remove("sign");
+for(Stringitem:map.keySet()){
+arrayList.add(item+"="+map.get(item));
+}
+Collections.sort(arrayList);
+for(Stringstring:arrayList){
+buffer.append(string);
+}
+
+
+===== PAGE 131 =====
+
+~128~
+Stringcontent=buffer+sign_key;
+Stringresult="";
+byte[]data=content.getBytes("UTF-8");
+result=Hex.encodeHexString(DigestUtils.md5(data));
+returnresult;
+}
+}
+(2)SignSignatureAlgorithm：Inadditiontothesignparameter,eachinterfaceis
+splicedintothesignaturealgorithm.
+importorg.apache.shiro.crypto.hash.Md5Hash;
+publicstaticStringcreateSign(Map<String,String>map){
+finalStringsign_key="1234567890qwertyuiopasdfghjklzxc";
+if(map.get("sign")==null)
+returnnull;
+StringBufferbuffer=newStringBuffer();
+List<String>arrayList=newArrayList<String>();
+map.remove("sign");
+for(Stringitem:map.keySet()){
+arrayList.add(item+"="+map.get(item));
+}
+Collections.sort(arrayList);
+for(Stringstring:arrayList){
+buffer.append(string);
+}
+Stringcontent=buffer+sign_key;
+Stringresult="";
+byte[]data=content.getBytes("UTF-8");
+result=Hex.encodeHexString(DigestUtils.md5(data));
+returnresult;
+}
+
+
+===== PAGE 132 =====
+
+~129~
+3.4PHPLoginDemo
+<?php
+$params=[
+"token"=>"xxxx",
+"skuId"=>"xxxx",
+"priceid"=>"xxxx",
+"count"=>"xxxx",
+"daypass"=>"xxxx",
+];
+echo"signresult：".bpm_sign($params);
+functionbpm_sign($data_ary){
+$Result='';
+if(is_array($data_ary)){
+$Sign_key="1234567890qwertyuiopasdfghjklzxc";
+$Buffer='';
+$ArrayList=[];
+if(isset($data_ary['sign'])){
+unset($data_ary['sign']);
+}
+foreach($data_aryas$k=>$v){
+$ArrayList[]=$k."=".$v;
+}
+sort($ArrayList);
+$Buffer=implode('',$ArrayList);
+echo"params：".$Buffer.PHP_EOL;
+$encodeStr=customURLEncode(($Buffer.$Sign_key));
+echo"encodeStr=".$encodeStr.PHP_EOL;
+$Result=strtoupper(hash('md5',$encodeStr));
+echo"mysign=".$Result.PHP_EOL;
+}
+return$Result;
+}
+functioncustomURLEncode($string){
+returnstr_replace(
+['+','*','%7E'],
+['%20','%2A','~'],
+rawurlencode($string)
+);
+}
+?>
+
+
+===== PAGE 133 =====
+
+~130~
+3.5PythonLoginDemo
+(1)SignDemo.py
+importthreading
+importbpm_lib
+deffun_timer():
+print("Thetimertriggered!")
+defmain():
+globallogin_status
+token=''
+whileTrue:
+phonenumber='xxxxxxxxxx'
+password='xxxxxxxx'
+tsid=''
+token=''
+#Checkforvalidphonenumberinput
+whilephonenumber=='':
+phonenumber=input('Pleaseenteryourphonenumber:')
+#Checkforvalidpasswordinput
+whilepassword=='':
+password=input('Pleaseenteryourpassword:')
+#Loginusingthephonenumberandpassword
+token=bpm_lib.log_in(phonenumber,password)
+iftoken=='':
+print('Pleaseenterthecorrectaccountandpassword!')
+phonenumber=''
+password=''
+imei=''
+tsid=''
+else:
+print(f"Loginsuccessful,token:{token}")
+break
+#Setupthetimer
+timer=threading.Timer(324000,fun_timer)
+timer.start()
+if__name__=="__main__":
+main()
+
+
+===== PAGE 134 =====
+
+~131~
+(2)Bpm_lib.py
+importhashlib
+importrequests
+importurllib.parse
+importjson
+sign_key='1234567890qwertyuiopasdfghjklzxc'
+login_url='https://bpm.roamwifi.hk/api_order/login'
+defcreat_sign(value):
+value.sort()
+MD5="".join(value)+sign_key
+encoded_str=urllib.parse.quote(MD5,safe='')
+sign_value=hashlib.md5(encoded_str.encode('utf-8')).hexdigest().upper()
+returnsign_value
+deflog_in(phonenumber,password):
+token=''
+message=['password=%s'%password,'phonenumber=%s'%phonenumber]
+sign=creat_sign(message)
+response=requests.get(url='%s'%(login_url),
+params={'password':'%s'%(password),
+'phonenumber':'%s'%(phonenumber),'sign':'%s'%(sign)})
+ifresponse.status_code==200:
+json_str=response.text
+value=json.loads(json_str)
+ifvalue['code']==1:
+json_str1=json.dumps(value['data'])
+data=json.loads(json_str1)
+token=data['token']
+else:
+print('log_incodeerror:%d'%value['code'])
+else:
+print('log_inservererror:%d'%response.status_code)
+returntoken

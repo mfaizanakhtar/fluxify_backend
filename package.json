@@ -1,0 +1,43 @@
+{
+  "name": "esim_backend",
+  "version": "0.1.0",
+  "private": true,
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
+    "test:component": "vitest run src/tests/firoam.component.test.ts --reporter verbose",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/index.js",
+    "worker": "ts-node-dev --respawn --transpile-only src/worker/index.ts",
+    "lint": "eslint . --ext .ts",
+    "format": "prettier --write .",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "test": "vitest"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.0.0",
+    "axios": "^1.5.0",
+    "dotenv": "^16.0.0",
+    "fastify": "^4.22.0",
+    "pg": "^8.11.0",
+    "pg-boss": "^8.0.0",
+    "prisma": "^5.0.0",
+    "qrcode": "^1.5.1",
+    "zod": "^4.2.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "eslint": "^8.50.0",
+    "eslint-config-prettier": "^8.8.0",
+    "eslint-plugin-prettier": "^5.0.0",
+    "nock": "^13.3.0",
+    "prettier": "^3.0.0",
+    "ts-node": "^10.9.1",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.1.6",
+    "vitest": "^4.0.16"
+  }
+}
