@@ -38,44 +38,55 @@ Purpose: concise handoff and next steps after recent FiRoam & schema work.
 ## Potential next todos (PR-sized, actionable)
 
 1. API: SKUs
-  - Add `GET /skus` and `GET /skus/:id` endpoints that call `FiRoamClient.getSkus()` and return normalized results.
-  - Files: `src/api/catalog.ts`, add route registration in `src/server.ts` or API index.
+
+- Add `GET /skus` and `GET /skus/:id` endpoints that call `FiRoamClient.getSkus()` and return normalized results.
+- Files: `src/api/catalog.ts`, add route registration in `src/server.ts` or API index.
 
 2. Tests: API endpoints
-  - Add Vitest tests using Fastify `inject` for `GET /skus`, `GET /skus/:id`, and webhook endpoints.
-  - Files: `src/tests/api.catalog.test.ts`, `src/tests/api.webhook.test.ts`.
+
+- Add Vitest tests using Fastify `inject` for `GET /skus`, `GET /skus/:id`, and webhook endpoints.
+- Files: `src/tests/api.catalog.test.ts`, `src/tests/api.webhook.test.ts`.
 
 3. Webhook: persist + enqueue
-  - Implement idempotent persistence for `orders/paid` in `src/api/webhook.ts` (use order_id + line_item_id unique constraint or check).
-  - Enqueue `provision_esim` jobs with necessary payload (deliveryId + orderPayload).
+
+- Implement idempotent persistence for `orders/paid` in `src/api/webhook.ts` (use order_id + line_item_id unique constraint or check).
+- Enqueue `provision_esim` jobs with necessary payload (deliveryId + orderPayload).
 
 4. Worker: retry policy & DLQ
-  - Add exponential backoff and dead-letter handling for failed provisioning jobs in pg-boss.
-  - Record `delivery_attempts` with result details.
+
+- Add exponential backoff and dead-letter handling for failed provisioning jobs in pg-boss.
+- Record `delivery_attempts` with result details.
 
 5. Delivery: Email + QR generation
-  - Implement `src/email` service to render templates and send via Postmark/SendGrid/SES.
-  - Generate QR codes from LPA (use `qrcode` lib) and include fallback activation codes.
+
+- Implement `src/email` service to render templates and send via Postmark/SendGrid/SES.
+- Generate QR codes from LPA (use `qrcode` lib) and include fallback activation codes.
 
 6. Admin endpoints
-  - Add protected admin routes to view deliveries, filter by status, retry failed deliveries, and re-send emails.
+
+- Add protected admin routes to view deliveries, filter by status, retry failed deliveries, and re-send emails.
 
 7. Validation helper
-  - Add `ensureAddEsimOrder(payload)` exported helper to centralize input validation/transform for reuse in webhook/tests.
+
+- Add `ensureAddEsimOrder(payload)` exported helper to centralize input validation/transform for reuse in webhook/tests.
 
 8. Integration tests (E2E)
-  - Add an end-to-end test that mocks FiRoam (nock), enqueues a job, runs the worker handler, and asserts DB + email calls.
+
+- Add an end-to-end test that mocks FiRoam (nock), enqueues a job, runs the worker handler, and asserts DB + email calls.
 
 9. Docs & README
-  - Update README with environment variables, run steps, and troubleshooting (DB, migrations, FIROAM creds, ENCRYPTION_KEY rules).
+
+- Update README with environment variables, run steps, and troubleshooting (DB, migrations, FIROAM creds, ENCRYPTION_KEY rules).
 
 10. CI & dev bootstrap
-  - Add GitHub Actions: `lint`, `typecheck`, `test`, and migration dry-run check.
-  - Add `docker-compose.yml` for Postgres + app dev convenience.
+
+- Add GitHub Actions: `lint`, `typecheck`, `test`, and migration dry-run check.
+- Add `docker-compose.yml` for Postgres + app dev convenience.
 
 ---
 
 If you'd like I can start with one of the above; recommended first tasks: **Webhook: persist + enqueue** (connects API → worker) or **API: SKUs** (small, testable, and useful for UIs). Reply with which to start.
+
 ````markdown
 # Workspace Update
 
@@ -106,6 +117,7 @@ Purpose: provide a concise handoff for the current state of the eSIM backend and
 - Added `worker` npm script
 
 Files of interest:
+
 - `FiRoam_documentation.txt` — vendor API spec (canonical source)
 
 ---
@@ -140,6 +152,7 @@ npm run worker
 ```
 
 Notes:
+
 - For development you can spin Postgres with Docker: `docker run -e POSTGRES_PASSWORD=secret -e POSTGRES_DB=esim -p 5432:5432 -d postgres:15`
 - Fill `.env` with FIROAM credentials to test provisioning, or mock FiRoam endpoints.
 
@@ -201,8 +214,8 @@ If you want, I can now: (A) wire the webhook to enqueue jobs, or (B) add Docker 
 These changes make vendor interactions safer (runtime validation + typed invariants) and add a small, auditable DB model for issued eSIM payloads.
 
 Next recommended step (small): run the Prisma migration to add the `EsimOrder` table and then run the worker once to exercise a mocked FiRoam flow.
-
 ````
+
 # Workspace Update
 
 Date: 2025-12-25
@@ -232,6 +245,7 @@ Purpose: provide a concise handoff for the current state of the eSIM backend and
 - Added `worker` npm script
 
 Files of interest:
+
 - `FiRoam_documentation.txt` — vendor API spec (canonical source)
 
 ---
@@ -266,6 +280,7 @@ npm run worker
 ```
 
 Notes:
+
 - For development you can spin Postgres with Docker: `docker run -e POSTGRES_PASSWORD=secret -e POSTGRES_DB=esim -p 5432:5432 -d postgres:15`
 - Fill `.env` with FIROAM credentials to test provisioning, or mock FiRoam endpoints.
 

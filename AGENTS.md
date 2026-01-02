@@ -1,6 +1,7 @@
 # Shopify eSIM Fulfillment – Agent Instructions
 
 ## Goal
+
 Build a backend system that automatically provisions and delivers eSIMs
 after a successful Shopify payment, using vendor APIs.
 
@@ -19,6 +20,7 @@ The system must be reliable, idempotent, and simple to operate for low volume
 - All business logic lives in an external Node.js backend
 
 One repository, two runtime processes:
+
 - **API process**: receives Shopify webhooks, admin endpoints
 - **Worker process**: provisions eSIMs, sends emails, marks fulfillment
 
@@ -32,6 +34,7 @@ No App Store listing.
 ## Shopify Integration
 
 ### Shopify Custom App (single store)
+
 - Created in Shopify Admin
 - Purpose:
   - Receive `orders/paid` webhook
@@ -40,12 +43,14 @@ No App Store listing.
 - Treated as credentials + permissions only (not a hosted service)
 
 ### Required API scopes
+
 - read_orders
 - read_fulfillments
 - write_fulfillments
 - read_metafields
 
 ### Webhooks
+
 - `orders/paid`
 - (optional later) `refunds/create`, `orders/cancelled`
 
@@ -54,10 +59,12 @@ No App Store listing.
 ## Vendor eSIM Portal Integration
 
 ### Source of truth for vendor API
+
 - All API endpoints, request/response formats, authentication, error codes, and required headers
   for the eSIM portal MUST be implemented according to **FiRoam_documentation.pdf** (treat it as canonical).
 
 ### Implementation rules
+
 - Wrap vendor API access behind a single module (e.g. `src/vendor/firoamClient.ts`)
 - Normalize vendor responses into an internal “canonical eSIM payload” shape used by the app
 - Never store vendor secrets in code; use environment variables only
@@ -97,7 +104,9 @@ Backend logic MUST rely on metafields, not product titles or SKUs.
 ## Runtime Processes
 
 ### API Process
+
 Responsibilities:
+
 - Receive `orders/paid` webhook
 - Verify Shopify HMAC signature
 - Perform idempotency check (order_id + line_item_id)
@@ -106,6 +115,7 @@ Responsibilities:
 - Return HTTP 200 quickly
 
 Also exposes:
+
 - Admin endpoints (protected):
   - resend delivery
   - view status
@@ -114,7 +124,9 @@ Also exposes:
   - GET /delivery/:token
 
 ### Worker Process
+
 Responsibilities:
+
 - Dequeue provisioning jobs
 - Fetch order + variant metafields if needed
 - Call vendor API (per **FiRoam_documentation.txt**) to issue eSIM
@@ -126,6 +138,7 @@ Responsibilities:
 - Update delivery status
 
 Implements:
+
 - Retries with backoff
 - Terminal failure state after max attempts
 
@@ -134,6 +147,7 @@ Implements:
 ## Data Model (Minimum)
 
 ### esim_deliveries
+
 - id
 - shop
 - order_id
@@ -148,12 +162,14 @@ Implements:
 - timestamps
 
 ### delivery_attempts
+
 - delivery_id
 - channel (email)
 - result
 - timestamps
 
 ### jobs
+
 - managed by queue system (pg-boss or BullMQ)
 
 ---
@@ -161,6 +177,7 @@ Implements:
 ## Delivery Strategy
 
 Primary:
+
 - Email with:
   - QR code
   - fallback activation codes
@@ -168,6 +185,7 @@ Primary:
   - link to retrieval page
 
 Secondary:
+
 - Optional retrieval page for re-access:
   - GET /delivery/:token
   - Token-based auth
