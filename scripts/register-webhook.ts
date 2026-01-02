@@ -1,6 +1,6 @@
 #!/usr/bin/env ts-node
 /**
- * Register orders/paid webhook with Shopify using GraphQL Admin API
+ * Register orders/paid webhook with Shopify using the official Shopify SDK
  *
  * Usage:
  *   1. Start ngrok: npm run ngrok
@@ -9,7 +9,7 @@
  */
 
 import 'dotenv/config';
-import { shopifyGraphQL } from './utils/shopify-admin';
+import { graphqlQuery } from './utils/shopify-graphql';
 import type { WebhookSubscriptionCreateResponse } from './utils/shopify-types';
 
 const SHOPIFY_DOMAIN = process.env.SHOPIFY_SHOP_DOMAIN;
@@ -20,11 +20,11 @@ async function registerWebhook(callbackUrl: string) {
   console.log('📝 Registering webhook...');
 
   const mutation = `
-    mutation {
+    mutation webhookSubscriptionCreate($topic: WebhookSubscriptionTopic!, $callbackUrl: String!) {
       webhookSubscriptionCreate(
-        topic: ORDERS_PAID
+        topic: $topic
         webhookSubscription: {
-          callbackUrl: "${callbackUrl}/webhook/orders/paid"
+          callbackUrl: $callbackUrl
           format: JSON
         }
       ) {
@@ -48,8 +48,11 @@ async function registerWebhook(callbackUrl: string) {
   `;
 
   try {
-    const response = await shopifyGraphQL<WebhookSubscriptionCreateResponse>(mutation);
-    const result = response.data.data.webhookSubscriptionCreate;
+    const response = await graphqlQuery<WebhookSubscriptionCreateResponse>(mutation, {
+      topic: 'ORDERS_PAID',
+      callbackUrl: `${callbackUrl}/webhook/orders/paid`,
+    });
+    const result = response.data.webhookSubscriptionCreate;
 
     if (result.userErrors.length > 0) {
       console.error('❌ Error creating webhook:');

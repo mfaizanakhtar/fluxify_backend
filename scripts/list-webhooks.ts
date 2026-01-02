@@ -7,7 +7,7 @@
 
 import 'dotenv/config';
 import axios from 'axios';
-import { shopifyGraphQL } from './utils/shopify-admin';
+import { graphqlQuery } from './utils/shopify-graphql';
 import type { WebhookSubscriptionsList } from './utils/shopify-types';
 
 async function listWebhooks() {
@@ -38,9 +38,9 @@ async function listWebhooks() {
   `;
 
   try {
-    const response = await shopifyGraphQL<WebhookSubscriptionsList>(query);
+    const response = await graphqlQuery<WebhookSubscriptionsList>(query);
 
-    const webhooks = response.data.data.webhookSubscriptions.edges;
+    const webhooks = response.data.webhookSubscriptions.edges;
 
     if (webhooks.length === 0) {
       console.log('No webhooks registered yet.');

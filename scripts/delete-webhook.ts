@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { shopifyGraphQL } from './utils/shopify-admin';
+import { graphqlQuery } from './utils/shopify-graphql';
 import type { WebhookSubscriptionDeleteResponse } from './utils/shopify-types';
 
 async function deleteWebhook(webhookId: string) {
@@ -7,8 +7,8 @@ async function deleteWebhook(webhookId: string) {
   console.log(`🗑️  Deleting webhook ${webhookId}...`);
 
   const mutation = `
-    mutation {
-      webhookSubscriptionDelete(id: "${webhookId}") {
+    mutation webhookSubscriptionDelete($id: ID!) {
+      webhookSubscriptionDelete(id: $id) {
         deletedWebhookSubscriptionId
         userErrors {
           field
@@ -19,9 +19,11 @@ async function deleteWebhook(webhookId: string) {
   `;
 
   try {
-    const response = await shopifyGraphQL<WebhookSubscriptionDeleteResponse>(mutation);
+    const response = await graphqlQuery<WebhookSubscriptionDeleteResponse>(mutation, {
+      id: webhookId,
+    });
 
-    const result = response.data.data.webhookSubscriptionDelete;
+    const result = response.data.webhookSubscriptionDelete;
 
     if (result.userErrors.length > 0) {
       console.error('❌ Errors:', result.userErrors);

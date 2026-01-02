@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { shopifyGraphQL } from './utils/shopify-admin';
+import { graphqlQuery } from './utils/shopify-graphql';
 import type { WebhookSubscriptionsSecretList } from './utils/shopify-types';
 
 async function getWebhookSecret() {
@@ -7,7 +7,7 @@ async function getWebhookSecret() {
   console.log('🔍 Querying webhook details...');
 
   const query = `
-    {
+    query {
       webhookSubscriptions(first: 10) {
         edges {
           node {
@@ -30,10 +30,10 @@ async function getWebhookSecret() {
   `;
 
   try {
-    const response = await shopifyGraphQL<WebhookSubscriptionsSecretList>(query);
+    const response = await graphqlQuery<WebhookSubscriptionsSecretList>(query);
 
     console.log('\n📦 Response:');
-    console.log(JSON.stringify(response.data, null, 2));
+    console.log(JSON.stringify(response, null, 2));
   } catch (error) {
     if (error instanceof Error) {
       console.error('\n❌ Error:', error.message);

@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { shopifyGraphQL } from './utils/shopify-admin';
+import { graphqlQuery } from './utils/shopify-graphql';
 import type { WebhookSubscriptionUpdateResponse } from './utils/shopify-types';
 
 async function updateWebhook(webhookId: string, newUrl: string) {
@@ -8,11 +8,11 @@ async function updateWebhook(webhookId: string, newUrl: string) {
   console.log(`New URL: ${newUrl}/webhook/orders/paid`);
 
   const mutation = `
-    mutation {
+    mutation webhookSubscriptionUpdate($id: ID!, $callbackUrl: String!) {
       webhookSubscriptionUpdate(
-        id: "${webhookId}"
+        id: $id
         webhookSubscription: {
-          callbackUrl: "${newUrl}/webhook/orders/paid"
+          callbackUrl: $callbackUrl
         }
       ) {
         webhookSubscription {
@@ -34,9 +34,12 @@ async function updateWebhook(webhookId: string, newUrl: string) {
   `;
 
   try {
-    const response = await shopifyGraphQL<WebhookSubscriptionUpdateResponse>(mutation);
+    const response = await graphqlQuery<WebhookSubscriptionUpdateResponse>(mutation, {
+      id: webhookId,
+      callbackUrl: `${newUrl}/webhook/orders/paid`,
+    });
 
-    const result = response.data.data.webhookSubscriptionUpdate;
+    const result = response.data.webhookSubscriptionUpdate;
 
     if (result.userErrors.length > 0) {
       console.error('❌ Errors:', result.userErrors);

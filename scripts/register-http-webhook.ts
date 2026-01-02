@@ -1,5 +1,5 @@
 import 'dotenv/config';
-import { shopifyGraphQL } from './utils/shopify-admin';
+import { graphqlQuery } from './utils/shopify-graphql';
 import type {
   WebhookSubscriptionCreateResponse,
   AppInstallationScopes,
@@ -9,11 +9,11 @@ async function registerHttpWebhook(webhookUrl: string) {
   console.log('📝 Registering HTTP webhook subscription...');
 
   const mutation = `
-    mutation {
+    mutation webhookSubscriptionCreate($topic: WebhookSubscriptionTopic!, $callbackUrl: String!) {
       webhookSubscriptionCreate(
-        topic: ORDERS_PAID
+        topic: $topic
         webhookSubscription: {
-          callbackUrl: "${webhookUrl}/webhook/orders/paid"
+          callbackUrl: $callbackUrl
           format: JSON
         }
       ) {
@@ -37,12 +37,15 @@ async function registerHttpWebhook(webhookUrl: string) {
   `;
 
   try {
-    const response = await shopifyGraphQL<WebhookSubscriptionCreateResponse>(mutation);
+    const response = await graphqlQuery<WebhookSubscriptionCreateResponse>(mutation, {
+      topic: 'ORDERS_PAID',
+      callbackUrl: `${webhookUrl}/webhook/orders/paid`,
+    });
 
     console.log('\n📦 Full Response:');
-    console.log(JSON.stringify(response.data, null, 2));
+    console.log(JSON.stringify(response, null, 2));
 
-    const result = response.data.data.webhookSubscriptionCreate;
+    const result = response.data.webhookSubscriptionCreate;
 
     if (result.userErrors.length > 0) {
       console.error('\n❌ Errors:', result.userErrors);
@@ -56,7 +59,7 @@ async function registerHttpWebhook(webhookUrl: string) {
         console.log('Checking current scopes...');
 
         const scopesQuery = `
-          {
+          query {
             app {
               installation {
                 accessScopes {
@@ -67,8 +70,8 @@ async function registerHttpWebhook(webhookUrl: string) {
           }
         `;
 
-        const scopesResponse = await shopifyGraphQL<AppInstallationScopes>(scopesQuery);
-        console.log('\n🔐 Current scopes:', scopesResponse.data);
+        const scopesResponse = await graphqlQuery<AppInstallationScopes>(scopesQuery);
+        console.log('\n🔐 Current scopes:', scopesResponse);
       }
     } else if (result.webhookSubscription) {
       console.log('\n✅ Webhook registered successfully!');

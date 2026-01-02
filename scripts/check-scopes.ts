@@ -6,7 +6,7 @@
  */
 
 import 'dotenv/config';
-import { shopifyGraphQL } from './utils/shopify-admin';
+import { graphqlQuery } from './utils/shopify-graphql';
 import type { AppInstallationScopes } from './utils/shopify-types';
 
 const SHOPIFY_DOMAIN = process.env.SHOPIFY_SHOP_DOMAIN;
@@ -15,7 +15,7 @@ const CLIENT_SECRET = process.env.SHOPIFY_CLIENT_SECRET;
 
 async function getInstalledScopes(): Promise<string[]> {
   const query = `
-    {
+    query {
       app {
         installation {
           accessScopes {
@@ -26,8 +26,8 @@ async function getInstalledScopes(): Promise<string[]> {
     }
   `;
 
-  const response = await shopifyGraphQL<AppInstallationScopes>(query);
-  const scopes = response.data.data?.app?.installation?.accessScopes || [];
+  const response = await graphqlQuery<AppInstallationScopes>(query);
+  const scopes = response.data?.app?.installation?.accessScopes || [];
   return scopes.map((s) => s.handle);
 }
 

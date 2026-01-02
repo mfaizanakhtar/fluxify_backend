@@ -4,19 +4,18 @@
  */
 
 import 'dotenv/config';
-import { shopifyGraphQL } from './utils/shopify-admin';
-import type { AxiosError } from 'axios';
+import { graphqlQuery } from './utils/shopify-graphql';
 import type { WebhookSubscriptionCreateResponse } from './utils/shopify-types';
 
 async function testWebhookCreation() {
   console.log('🔍 Testing webhook creation with detailed output...\n');
 
   const mutation = `
-    mutation {
+    mutation webhookSubscriptionCreate($topic: WebhookSubscriptionTopic!, $callbackUrl: String!) {
       webhookSubscriptionCreate(
-        topic: ORDERS_PAID
+        topic: $topic
         webhookSubscription: {
-          callbackUrl: "https://example.com/webhook"
+          callbackUrl: $callbackUrl
           format: JSON
         }
       ) {
@@ -32,11 +31,14 @@ async function testWebhookCreation() {
   `;
 
   try {
-    const response = await shopifyGraphQL<WebhookSubscriptionCreateResponse>(mutation);
+    const response = await graphqlQuery<WebhookSubscriptionCreateResponse>(mutation, {
+      topic: 'ORDERS_PAID',
+      callbackUrl: 'https://example.com/webhook',
+    });
 
-    console.log('📦 Full Response:', JSON.stringify(response.data, null, 2));
+    console.log('📦 Full Response:', JSON.stringify(response, null, 2));
 
-    const result = response.data.data.webhookSubscriptionCreate;
+    const result = response.data.webhookSubscriptionCreate;
     if (result.userErrors.length > 0) {
       console.log('\n❌ Errors found:');
       result.userErrors.forEach((e) => {
@@ -46,13 +48,7 @@ async function testWebhookCreation() {
       console.log('\n✅ Success!');
     }
   } catch (error) {
-    if (error && typeof error === 'object' && 'response' in error) {
-      const axiosError = error as AxiosError;
-      console.log('❌ HTTP Error:', axiosError.response?.status);
-      console.log('Response data:', JSON.stringify(axiosError.response?.data, null, 2));
-    } else {
-      console.error('❌ Error:', error);
-    }
+    console.error('❌ Error:', error);
   }
 }
 
