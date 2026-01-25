@@ -7,3 +7,5 @@ dist/
 coverage/
 prisma/dev.db
 firoam-data/*
+csv-exports/*
+test-output/*

@@ -229,23 +229,26 @@ function loadFiRoamPackages(countryCode: number): FiRoamPackage[] {
   const lines = content.split('\n').filter((l) => l.trim());
   const packages: FiRoamPackage[] = [];
 
+  // CSV format: SKU_ID,SKU_Name,Price_ID,API_Code,Data_Amount,Unit,Days,Price_USD,Flow_Type,Expire_Days,Support_Daypass,Must_Date
   for (let i = 1; i < lines.length; i++) {
     const fields = parseCSVLine(lines[i]);
-    if (fields.length < 8) continue;
+    if (fields.length < 11) continue;
 
     const skuId = parseInt(fields[0], 10);
     const skuName = fields[1].replace(/"/g, '');
-    const apiCode = fields[2].replace(/"/g, '');
-    const dataAmount = parseInt(fields[3], 10);
-    const unit = fields[4].replace(/"/g, '');
-    const days = parseInt(fields[5], 10);
-    const priceUSD = parseFloat(fields[6]);
-    const supportDaypass = parseInt(fields[9], 10);
+    const priceId = parseInt(fields[2], 10);
+    const apiCode = fields[3].replace(/"/g, '');
+    const dataAmount = parseInt(fields[4], 10);
+    const unit = fields[5].replace(/"/g, '');
+    const days = parseInt(fields[6], 10);
+    const priceUSD = parseFloat(fields[7]);
+    const supportDaypass = parseInt(fields[10], 10);
 
-    if (!isNaN(skuId) && !isNaN(dataAmount) && !isNaN(days)) {
+    if (!isNaN(skuId) && !isNaN(dataAmount) && !isNaN(days) && !isNaN(priceId)) {
       packages.push({
         skuId,
         skuName,
+        priceId,
         apiCode,
         dataAmount,
         unit,
@@ -403,7 +406,7 @@ async function main() {
   console.log('🔍 Phase 2: Match Shopify SKUs with FiRoam Packages\n');
 
   // Load generated SKUs
-  const inputFile = path.join(process.cwd(), 'shopify-skus-generated.csv');
+  const inputFile = path.join(process.cwd(), 'csv-exports', 'shopify-skus-generated.csv');
   if (!fs.existsSync(inputFile)) {
     throw new Error(`Input file not found: ${inputFile}. Run 'npm run generate:skus' first.`);
   }
@@ -512,7 +515,7 @@ async function main() {
   );
 
   // Write output
-  const outputFile = path.join(process.cwd(), 'shopify-firoam-mappings.csv');
+  const outputFile = path.join(process.cwd(), 'csv-exports', 'shopify-firoam-mappings.csv');
   const outputLines: string[] = [];
   outputLines.push(
     [
@@ -558,7 +561,7 @@ async function main() {
   console.log(`📄 Output written to: ${outputFile}\n`);
 
   console.log('✨ Phase 2 complete! Next steps:');
-  console.log('  1. Review shopify-firoam-mappings.csv');
+  console.log('  1. Review csv-exports/shopify-firoam-mappings.csv');
   console.log('  2. Check Match_Status and Match_Confidence columns');
   console.log('  3. Run: npm run generate:seed\n');
 }

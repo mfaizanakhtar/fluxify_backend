@@ -10,6 +10,49 @@
 import fs from 'fs';
 import path from 'path';
 
+/**
+ * Parse CSV content handling multi-line quoted fields
+ * Returns array of rows, where each row is the original line(s) as a string
+ */
+function parseCSVRows(content: string): string[] {
+  const rows: string[] = [];
+  let currentRow = '';
+  let inQuotes = false;
+
+  for (let i = 0; i < content.length; i++) {
+    const char = content[i];
+
+    if (char === '"') {
+      // Handle escaped quotes ("")
+      if (i + 1 < content.length && content[i + 1] === '"') {
+        currentRow += '""';
+        i++; // Skip next quote
+      } else {
+        inQuotes = !inQuotes;
+        currentRow += char;
+      }
+    } else if (char === '\n' && !inQuotes) {
+      // End of row (not inside quotes)
+      if (currentRow.trim()) {
+        rows.push(currentRow);
+      }
+      currentRow = '';
+    } else if (char === '\r') {
+      // Skip carriage return
+      continue;
+    } else {
+      currentRow += char;
+    }
+  }
+
+  // Don't forget the last row
+  if (currentRow.trim()) {
+    rows.push(currentRow);
+  }
+
+  return rows;
+}
+
 function parseCSVLine(line: string): string[] {
   const result: string[] = [];
   let current = '';
@@ -19,6 +62,7 @@ function parseCSVLine(line: string): string[] {
     const char = line[i];
     if (char === '"') {
       inQuotes = !inQuotes;
+      current += char; // Preserve quotes
     } else if (char === ',' && !inQuotes) {
       result.push(current);
       current = '';
@@ -55,7 +99,7 @@ async function main() {
   console.log('📝 Update Shopify Export with Generated SKUs\n');
 
   // Load generated SKUs
-  const skuFile = path.join(process.cwd(), 'shopify-skus-generated.csv');
+  const skuFile = path.join(process.cwd(), 'csv-exports', 'shopify-skus-generated.csv');
   if (!fs.existsSync(skuFile)) {
     throw new Error(`File not found: ${skuFile}. Run 'npm run generate:skus' first.`);
   }
@@ -100,14 +144,15 @@ async function main() {
   console.log(`  Loaded ${skuMap.size} SKU mappings\n`);
 
   // Load original Shopify export
-  const exportFile = path.join(process.cwd(), 'products_export_1.csv');
+  const exportFile = path.join(process.cwd(), 'csv-exports', 'products_export_1.csv');
   if (!fs.existsSync(exportFile)) {
     throw new Error(`File not found: ${exportFile}`);
   }
 
   console.log('📦 Loading Shopify export...');
   const exportContent = fs.readFileSync(exportFile, 'utf-8');
-  const exportLines = exportContent.split('\n');
+  // Use multi-line aware parser to handle quoted fields with newlines
+  const exportLines = parseCSVRows(exportContent);
 
   console.log(`  Found ${exportLines.length - 1} rows\n`);
 
@@ -148,23 +193,23 @@ async function main() {
       notFound++;
     }
 
-    // Reconstruct line
-    const updatedLine = fields.map(escapeCSVField).join(',');
+    // Reconstruct line - fields already have quotes preserved
+    const updatedLine = fields.join(',');
     outputLines.push(updatedLine);
   }
 
   // Write output
-  const outputFile = path.join(process.cwd(), 'products_export_updated.csv');
+  const outputFile = path.join(process.cwd(), 'csv-exports', 'products_export_updated.csv');
   fs.writeFileSync(outputFile, outputLines.join('\n'), 'utf-8');
 
   console.log(`  Updated: ${updated}`);
   console.log(`  Not Found: ${notFound}`);
-  console.log(`\n📄 Output file: products_export_updated.csv`);
+  console.log(`\n📄 Output file: csv-exports/products_export_updated.csv`);
   console.log(`   Size: ${(fs.statSync(outputFile).size / 1024 / 1024).toFixed(2)} MB`);
   console.log(`   Lines: ${outputLines.length.toLocaleString()}\n`);
 
   console.log('✨ Done! Next steps:');
-  console.log('  1. Review products_export_updated.csv');
+  console.log('  1. Review csv-exports/products_export_updated.csv');
   console.log('  2. Upload to Shopify via Admin > Products > Import');
   console.log('  3. Select "Overwrite existing products" option\n');
 }

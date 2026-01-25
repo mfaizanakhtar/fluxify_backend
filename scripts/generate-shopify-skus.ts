@@ -250,8 +250,8 @@ function parseCSVLine(line: string): string[] {
  * Main function
  */
 async function main() {
-  const inputFile = path.join(process.cwd(), 'products_export_1.csv');
-  const outputFile = path.join(process.cwd(), 'shopify-skus-generated.csv');
+  const inputFile = path.join(process.cwd(), 'csv-exports', 'products_export_1.csv');
+  const outputFile = path.join(process.cwd(), 'csv-exports', 'shopify-skus-generated.csv');
 
   console.log('📦 Phase 1: Generate Shopify SKUs\n');
   console.log(`Reading: ${inputFile}`);
@@ -427,7 +427,7 @@ async function main() {
     });
 
   console.log('\n✨ Phase 1 complete! Next steps:');
-  console.log('  1. Review shopify-skus-generated.csv');
+  console.log('  1. Review csv-exports/shopify-skus-generated.csv');
   console.log('  2. Run: npm run match:firoam\n');
 }
 

@@ -88,7 +88,7 @@ echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━�
 echo ""
 npm run update:export
 echo ""
-echo -e "${GREEN}✅ Phase 5 complete: products_export_updated.csv${NC}"
+echo -e "${GREEN}✅ Phase 5 complete: csv-exports/products_export_updated.csv${NC}"
 echo ""
 
 # Phase 6: Clean Export
@@ -98,7 +98,7 @@ echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━�
 echo ""
 npm run clean:export
 echo ""
-echo -e "${GREEN}✅ Phase 6 complete: products_export_cleaned.csv${NC}"
+echo -e "${GREEN}✅ Phase 6 complete: csv-exports/products_export_cleaned.csv${NC}"
 echo ""
 
 # Phase 7: Verify Mappings
@@ -117,19 +117,19 @@ echo -e "${MAGENTA}════════════════════�
 echo -e "${MAGENTA}    ✨ Pipeline Complete!${NC}"
 echo -e "${MAGENTA}═══════════════════════════════════════════════════════════════${NC}"
 echo ""
-echo -e "${CYAN}📁 Generated Files:${NC}"
+echo -e "${CYAN}📁 Generated Files (csv-exports/):${NC}"
 echo "   • shopify-skus-generated.csv - Generated SKUs"
 echo "   • shopify-firoam-mappings.csv - Matching results"
-echo "   • prisma/seed-all-mappings.ts - Database seed script"
 echo "   • products_export_updated.csv - All products with SKUs"
 echo "   • products_export_cleaned.csv - Only fulfillable products"
 echo "   • shopify-missing-mappings.csv - Products without mappings"
 echo ""
 echo -e "${CYAN}🗄️  Database:${NC}"
 echo "   • ProviderSkuMapping table updated"
+echo "   • prisma/seed-all-mappings.ts - Database seed script"
 echo ""
 echo -e "${CYAN}📤 Next Steps:${NC}"
-echo "   1. Review products_export_cleaned.csv"
+echo "   1. Review csv-exports/products_export_cleaned.csv"
 echo "   2. Upload to Shopify Admin → Products → Import"
 echo "   3. Select 'Overwrite existing products that have a matching handle'"
 echo "   4. Test an order to verify eSIM provisioning"

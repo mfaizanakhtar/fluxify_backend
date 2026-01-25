@@ -94,7 +94,7 @@ async function main() {
   console.log(`📦 Loaded ${firoamCountries.size} FiRoam countries\n`);
 
   // Load missing SKUs
-  const missingFile = path.join(process.cwd(), 'shopify-missing-mappings.csv');
+  const missingFile = path.join(process.cwd(), 'csv-exports', 'shopify-missing-mappings.csv');
   if (!fs.existsSync(missingFile)) {
     throw new Error(`File not found: ${missingFile}. Run 'npm run verify:mappings' first.`);
   }
@@ -282,7 +282,7 @@ async function main() {
       console.log(`     ${sku.sku} (${sku.handle})`);
     });
 
-    const outputFile = path.join(process.cwd(), 'should-have-matched.csv');
+    const outputFile = path.join(process.cwd(), 'csv-exports', 'should-have-matched.csv');
     const lines = ['SKU,Handle,Country_Code,Package_Type,Days_Count,Data_Amount'];
     actuallyAvailable.forEach((sku) => {
       lines.push(
@@ -290,7 +290,7 @@ async function main() {
       );
     });
     fs.writeFileSync(outputFile, lines.join('\n'), 'utf-8');
-    console.log(`\n   📄 Full list: should-have-matched.csv`);
+    console.log(`\n   📄 Full list: csv-exports/should-have-matched.csv`);
   }
 
   console.log(`\n💡 Recommendations:`);

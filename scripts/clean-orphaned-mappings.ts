@@ -36,7 +36,7 @@ async function main() {
   console.log('🧹 Clean Orphaned Database Mappings\n');
 
   // Load valid SKUs from cleaned export
-  const exportFile = path.join(process.cwd(), 'products_export_cleaned.csv');
+  const exportFile = path.join(process.cwd(), 'csv-exports', 'products_export_cleaned.csv');
   if (!fs.existsSync(exportFile)) {
     throw new Error(`File not found: ${exportFile}. Run 'npm run clean:export' first.`);
   }
@@ -105,7 +105,7 @@ async function main() {
 
   // Ask for confirmation
   console.log(`\n⚠️  WARNING: This will DELETE ${orphaned.length} mappings from the database.`);
-  console.log('   These SKUs are not in products_export_cleaned.csv\n');
+  console.log('   These SKUs are not in csv-exports/products_export_cleaned.csv\n');
 
   // Check if running in CI or force mode
   const force = process.argv.includes('--force') || process.argv.includes('-f');
@@ -139,7 +139,7 @@ async function main() {
   console.log(`   After: ${remaining} mappings\n`);
 
   // Export deleted mappings for reference
-  const backupFile = path.join(process.cwd(), 'deleted-mappings-backup.csv');
+  const backupFile = path.join(process.cwd(), 'csv-exports', 'deleted-mappings-backup.csv');
   const backupLines = ['ID,Shopify_SKU,Provider,Created_At'];
   orphaned.forEach((m) => {
     backupLines.push(`${m.id},${m.shopifySku},${m.provider},${m.createdAt.toISOString()}`);

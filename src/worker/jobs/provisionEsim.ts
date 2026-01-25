@@ -63,21 +63,25 @@ export async function handleProvision(jobData: Record<string, unknown>) {
         throw new Error(`Unsupported provider: ${mapping.provider}`);
       }
 
-      // Parse the providerSku to extract skuId and priceId
-      // Format: providerSku should be "skuId:priceId" (e.g., "26:392-1-1-300-M")
-      // For backward compatibility, if no colon, treat as priceId only and fail with helpful error
+      // Parse the providerSku to extract skuId, apiCode, and priceId
+      // Format: "skuId:apiCode:priceId" (e.g., "120:826-0-?-1-G-D:14094")
+      // Legacy format: "skuId:apiCode" without priceId (will require runtime lookup for daypass)
       const parts = mapping.providerSku.split(':');
-      if (parts.length !== 2) {
+      if (parts.length < 2) {
         throw new Error(
-          `Invalid providerSku format: ${mapping.providerSku}. Expected format: "skuId:priceId" (e.g., "26:392-1-1-300-M")`,
+          `Invalid providerSku format: ${mapping.providerSku}. Expected format: "skuId:apiCode:priceId" (e.g., "120:826-0-?-1-G-D:14094")`,
         );
       }
 
-      const [skuId, priceId] = parts;
+      // Handle both formats:
+      // New: "120:826-0-?-1-G-D:14094" (skuId:apiCode:priceId)
+      // Legacy: "120:826-0-?-1-G-D" (skuId:apiCode) - requires runtime lookup for daypass
+      const skuId = parts[0];
+      const apiCode = parts.length >= 2 ? parts[1] : '';
+      const storedPriceId = parts.length >= 3 ? parts[2] : null;
 
       orderPayload = {
         skuId,
-        priceId,
         count: '1',
         backInfo: '1', // Get full details immediately (one-step flow)
         customerEmail: delivery.customerEmail || undefined,
@@ -88,8 +92,71 @@ export async function handleProvision(jobData: Record<string, unknown>) {
         if (!mapping.daysCount) {
           throw new Error(`Daypass package ${sku} requires daysCount field in mapping`);
         }
+
+        // For daypass, the apiCode template has "?" which gets replaced with actual days
+        const apiCodeWithDays = apiCode.replace('?', String(mapping.daysCount));
+
+        // Use stored priceId if available (new format), otherwise do runtime lookup (legacy)
+        if (storedPriceId) {
+          console.log(
+            `[ProvisionJob] Daypass: ${mapping.daysCount} days, using stored priceId: ${storedPriceId}`,
+          );
+          orderPayload.priceId = storedPriceId;
+        } else {
+          // Legacy format: Need to fetch the numeric priceid from FiRoam API
+          console.log(
+            `[ProvisionJob] Daypass: ${mapping.daysCount} days, looking up priceid for apiCode: ${apiCodeWithDays}`,
+          );
+
+          // Fetch packages from FiRoam to get the numeric priceid
+          const packagesResult = await fiRoam.getPackages(skuId);
+          if (!packagesResult.packageData) {
+            throw new Error(
+              `Failed to fetch packages for skuId ${skuId}: ${packagesResult.error || 'Unknown error'}`,
+            );
+          }
+
+          // Find the package matching our apiCode
+          const esimPackages = packagesResult.packageData.esimPackageDtoList || [];
+          const matchingPkg = esimPackages.find((pkg) => pkg.apiCode === apiCodeWithDays);
+
+          if (!matchingPkg) {
+            // Try without the day replacement (some daypass packages might use different format)
+            const matchingPkgAlt = esimPackages.find(
+              (pkg) =>
+                pkg.supportDaypass === 1 &&
+                pkg.flows === parseInt(apiCode.split('-')[3] || '0', 10),
+            );
+            if (!matchingPkgAlt) {
+              console.log(
+                `[ProvisionJob] Available packages:`,
+                esimPackages.map((p) => ({
+                  apiCode: p.apiCode,
+                  priceid: p.priceid,
+                  supportDaypass: p.supportDaypass,
+                })),
+              );
+              throw new Error(`No matching daypass package found for apiCode: ${apiCodeWithDays}`);
+            }
+            orderPayload.priceId = String(matchingPkgAlt.priceid);
+            console.log(
+              `[ProvisionJob] Found daypass package by data amount, priceid: ${matchingPkgAlt.priceid}`,
+            );
+          } else {
+            orderPayload.priceId = String(matchingPkg.priceid);
+            console.log(`[ProvisionJob] Found daypass package, priceid: ${matchingPkg.priceid}`);
+          }
+        }
+
         (orderPayload as Record<string, unknown>).daypassDays = String(mapping.daysCount);
-        console.log(`[ProvisionJob] Daypass package: ${mapping.daysCount} days`);
+      } else {
+        // Fixed package: Use stored priceId if available, otherwise use apiCode as priceId (legacy behavior)
+        if (storedPriceId) {
+          orderPayload.priceId = storedPriceId;
+        } else {
+          // Legacy: apiCode might be numeric priceId
+          orderPayload.priceId = apiCode;
+        }
       }
     }
 

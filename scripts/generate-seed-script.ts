@@ -123,7 +123,7 @@ function getRegion(countryName: string): string {
 async function main() {
   console.log('🌱 Phase 3: Generate Deployment Seed Script\n');
 
-  const inputFile = path.join(process.cwd(), 'shopify-firoam-mappings.csv');
+  const inputFile = path.join(process.cwd(), 'csv-exports', 'shopify-firoam-mappings.csv');
   if (!fs.existsSync(inputFile)) {
     throw new Error(`Input file not found: ${inputFile}. Run 'npm run match:firoam' first.`);
   }
@@ -211,9 +211,13 @@ async function main() {
     for (const record of batch) {
       const name = generateName(record);
       const region = getRegion(record.firoamCountryName);
-      const providerSku = record.firoamPriceId
-        ? `${record.firoamSkuId}:${record.firoamPriceId}`
-        : `${record.firoamSkuId}:${record.firoamApiCode}`;
+      // Format: skuId:apiCode:priceId (e.g., "120:826-0-?-1-G-D:14094")
+      // This ensures we always have both the apiCode (for reference) and numeric priceId (for ordering)
+      const providerSku = record.firoamPriceId && record.firoamApiCode
+        ? `${record.firoamSkuId}:${record.firoamApiCode}:${record.firoamPriceId}`
+        : record.firoamApiCode
+          ? `${record.firoamSkuId}:${record.firoamApiCode}`
+          : `${record.firoamSkuId}:unknown`;
 
       outputLines.push(`    {`);
       outputLines.push(`      shopifySku: '${record.shopifySKU}',`);

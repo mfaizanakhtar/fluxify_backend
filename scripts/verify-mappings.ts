@@ -150,7 +150,7 @@ async function main() {
       });
 
     // Write missing SKUs to file
-    const missingFile = path.join(process.cwd(), 'shopify-missing-mappings.csv');
+    const missingFile = path.join(process.cwd(), 'csv-exports', 'shopify-missing-mappings.csv');
     const missingLines = ['SKU,Handle,Country_Code,Package_Type,Days_Count,Data_Amount'];
     inShopifyNotInDb.forEach((sku) => {
       const detail = shopifyDetails.get(sku);
@@ -161,7 +161,7 @@ async function main() {
       }
     });
     fs.writeFileSync(missingFile, missingLines.join('\n'), 'utf-8');
-    console.log(`\n   📄 Full list: shopify-missing-mappings.csv\n`);
+    console.log(`\n   📄 Full list: csv-exports/shopify-missing-mappings.csv\n`);
   }
 
   // Orphaned mappings
@@ -172,9 +172,9 @@ async function main() {
     );
     console.log('   These may be from old products or test data\n');
 
-    const orphanedFile = path.join(process.cwd(), 'database-orphaned-mappings.csv');
+    const orphanedFile = path.join(process.cwd(), 'csv-exports', 'database-orphaned-mappings.csv');
     fs.writeFileSync(orphanedFile, ['SKU'].concat(inDbNotInShopify).join('\n'), 'utf-8');
-    console.log(`   📄 Full list: database-orphaned-mappings.csv\n`);
+    console.log(`   📄 Full list: csv-exports/database-orphaned-mappings.csv\n`);
   }
 
   // Summary
@@ -189,7 +189,7 @@ async function main() {
     console.log('✨ Perfect! All Shopify products have database mappings.\n');
   } else {
     console.log('💡 Next Steps:');
-    console.log('   1. Review shopify-missing-mappings.csv');
+    console.log('   1. Review csv-exports/shopify-missing-mappings.csv');
     console.log('   2. Check if FiRoam offers these packages');
     console.log('   3. Consider alternative providers or remove from store\n');
   }
