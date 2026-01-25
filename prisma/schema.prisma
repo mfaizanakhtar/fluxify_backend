@@ -8,58 +8,61 @@ datasource db {
 }
 
 model EsimDelivery {
-  id                 String   @id @default(cuid())
-  shop               String
-  orderId            String
-  orderName          String
-  lineItemId         String
-  variantId          String
-  customerEmail      String?
-  vendorReferenceId  String?
-  payloadEncrypted   String?
-  status             String   @default("pending")
-  lastError          String?
-  attempts           DeliveryAttempt[]
-  esimOrders         EsimOrder[]
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
+  id                String            @id @default(cuid())
+  shop              String
+  orderId           String
+  orderName         String
+  lineItemId        String
+  variantId         String
+  customerEmail     String?
+  vendorReferenceId String?
+  payloadEncrypted  String?
+  status            String            @default("pending")
+  lastError         String?
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  attempts          DeliveryAttempt[]
+  esimOrders        EsimOrder[]
 }
 
 model DeliveryAttempt {
-  id          String       @id @default(cuid())
-  delivery    EsimDelivery @relation(fields: [deliveryId], references: [id])
-  deliveryId  String
-  channel     String
-  result      String?
-  createdAt   DateTime     @default(now())
+  id         String       @id @default(cuid())
+  deliveryId String
+  channel    String
+  result     String?
+  createdAt  DateTime     @default(now())
+  delivery   EsimDelivery @relation(fields: [deliveryId], references: [id])
 }
 
 model EsimOrder {
-  id                 String   @id @default(cuid())
-  delivery           EsimDelivery? @relation(fields: [deliveryId], references: [id])
-  deliveryId         String?
-  vendorReferenceId  String   @unique
-  payloadJson        Json?
-  payloadEncrypted   String?
-  status             String   @default("created")
-  lastError          String?
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
+  id                String        @id @default(cuid())
+  deliveryId        String?
+  vendorReferenceId String        @unique
+  payloadJson       Json?
+  payloadEncrypted  String?
+  status            String        @default("created")
+  lastError         String?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  delivery          EsimDelivery? @relation(fields: [deliveryId], references: [id])
 }
 
 model ProviderSkuMapping {
-  id            String   @id @default(cuid())
-  shopifySku    String   @unique
-  provider      String   // 'firoam', 'airalo', etc.
-  providerSku   String   // Provider's package/plan code
-  name          String?  // Friendly name
-  region        String?  // e.g., 'EU', 'Global', 'Asia'
-  dataAmount    String?  // e.g., '5GB', '10GB'
-  validity      String?  // e.g., '30 days', '7 days'
-  isActive      Boolean  @default(true)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id          String   @id @default(cuid())
+  shopifySku  String   @unique
+  provider    String   // 'firoam', 'airalo', etc.
+  providerSku String   // Provider's package/plan code (e.g., "26:17464")
+  name        String?  // Friendly name
+  region      String?  // e.g., 'EU', 'Global', 'Asia'
+  dataAmount  String?  // e.g., '5GB', '10GB'
+  validity    String?  // e.g., '30 days', '7 days'
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  packageType String?  @default("fixed") // 'fixed' or 'daypass'
+  daysCount   Int?     // Number of days (required for daypass packages)
 
   @@index([provider])
   @@index([isActive])
+  @@index([packageType])
 }

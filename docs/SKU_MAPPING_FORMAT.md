@@ -72,6 +72,42 @@ SKU_ID,SKU_Name,Price_ID,API_Code,Data_Amount,Unit,Days,Price_USD,...
 26:424
 ```
 
+## Package Types
+
+### Fixed Packages
+
+Fixed packages have a set validity period (e.g., "1GB valid for 3 days total").
+
+```typescript
+{
+  shopifySku: 'JP-1GB-3D-FIXED',
+  provider: 'firoam',
+  providerSku: '26:424',
+  packageType: 'fixed',
+  daysCount: null,
+}
+```
+
+### Daypass Packages
+
+Daypass packages provide data allowance per day (e.g., "1GB/day for 3 days = 3GB total").
+These packages use the `Support_Daypass=1` packages from FiRoam.
+
+```typescript
+{
+  shopifySku: 'JP-1GB-3D-DAYPASS',
+  provider: 'firoam',
+  providerSku: '26:daypass_priceid', // Use the priceId from packages with "?" in API_Code
+  packageType: 'daypass',
+  daysCount: 3, // Number of day passes (sends daypassDays: "3" to FiRoam API)
+}
+```
+
+**Important**: Daypass packages require:
+- A priceId from packages where `Support_Daypass=1`
+- The `daysCount` field must be set
+- The value must be between `minDay` and `maxDay` from the package info
+
 ## Database Examples
 
 ```typescript

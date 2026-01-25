@@ -82,6 +82,15 @@ export async function handleProvision(jobData: Record<string, unknown>) {
         backInfo: '1', // Get full details immediately (one-step flow)
         customerEmail: delivery.customerEmail || undefined,
       };
+
+      // Add daypassDays parameter for daypass packages
+      if (mapping.packageType === 'daypass') {
+        if (!mapping.daysCount) {
+          throw new Error(`Daypass package ${sku} requires daysCount field in mapping`);
+        }
+        (orderPayload as Record<string, unknown>).daypassDays = String(mapping.daysCount);
+        console.log(`[ProvisionJob] Daypass package: ${mapping.daysCount} days`);
+      }
     }
 
     if (!orderPayload) {
