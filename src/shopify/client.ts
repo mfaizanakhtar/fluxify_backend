@@ -107,16 +107,46 @@ export class ShopifyClient {
   }
 
   /**
-   * Get variant metafields
+   * Get variant metafields using GraphQL (better permission handling)
    */
   async getVariantMetafields(variantId: string): Promise<unknown[]> {
     const token = await this.getAccessToken();
-    const response = await this.axiosInstance.get(`/variants/${variantId}/metafields.json`, {
-      headers: {
-        'X-Shopify-Access-Token': token,
+
+    const query = `
+      query getVariantMetafields($id: ID!) {
+        productVariant(id: $id) {
+          metafields(first: 20) {
+            edges {
+              node {
+                namespace
+                key
+                value
+                type
+              }
+            }
+          }
+        }
+      }
+    `;
+
+    const response = await axios.post(
+      `https://${this.config.shopDomain}/admin/api/2026-01/graphql.json`,
+      {
+        query,
+        variables: {
+          id: `gid://shopify/ProductVariant/${variantId}`,
+        },
       },
-    });
-    return response.data.metafields || [];
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Shopify-Access-Token': token,
+        },
+      },
+    );
+
+    const edges = response.data?.data?.productVariant?.metafields?.edges || [];
+    return edges.map((edge: { node: unknown }) => edge.node);
   }
 
   /**

@@ -23,6 +23,7 @@ interface ShopifyOrderPaidWebhook {
     product_id: number;
     title: string;
     name: string;
+    sku?: string;
   }>;
 }
 
@@ -133,6 +134,7 @@ export default function webhookRoutes(
             lineItemId,
             variantId,
             customerEmail,
+            sku: lineItem.sku || null,
           });
 
           app.log.info(`[Webhook] Enqueued provisioning job for delivery ${delivery.id}`);

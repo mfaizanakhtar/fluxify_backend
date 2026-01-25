@@ -1,6 +1,5 @@
 import prisma from '../../db/prisma';
 import FiRoamClient from '../../vendor/firoamClient';
-import { getShopifyClient } from '../../shopify/client';
 
 const fiRoam = new FiRoamClient();
 
@@ -11,6 +10,7 @@ interface ProvisionJobData {
   lineItemId?: string;
   variantId?: string;
   customerEmail?: string;
+  sku?: string | null;
   orderPayload?: Record<string, unknown>;
 }
 
@@ -33,29 +33,54 @@ export async function handleProvision(jobData: Record<string, unknown>) {
   try {
     let orderPayload = data.orderPayload;
 
-    // If no orderPayload provided, fetch variant metafields from Shopify
-    if (!orderPayload && delivery.variantId) {
-      const shopify = getShopifyClient();
-      const metafields = (await shopify.getVariantMetafields(delivery.variantId)) as Array<{
-        namespace?: string;
-        key?: string;
-        value?: string;
-      }>;
+    // If no orderPayload provided, look up SKU mapping
+    if (!orderPayload) {
+      const sku = data.sku;
 
-      const vendorPlanCode = metafields.find(
-        (m) => m.namespace === 'vendor' && m.key === 'planCode',
-      )?.value;
-
-      if (!vendorPlanCode) {
-        throw new Error(`Missing vendor.planCode metafield for variant ${delivery.variantId}`);
+      if (!sku) {
+        throw new Error('Missing SKU in job data');
       }
 
-      console.log(`[ProvisionJob] Using vendor plan: ${vendorPlanCode}`);
+      // Look up provider mapping by SKU
+      const mapping = await prisma.providerSkuMapping.findUnique({
+        where: { shopifySku: sku },
+      });
+
+      if (!mapping) {
+        throw new Error(`No provider mapping found for SKU: ${sku}`);
+      }
+
+      if (!mapping.isActive) {
+        throw new Error(`SKU mapping is inactive: ${sku}`);
+      }
+
+      console.log(
+        `[ProvisionJob] Using provider: ${mapping.provider}, SKU: ${mapping.providerSku}`,
+      );
+
+      // For now, we only support FiRoam
+      if (mapping.provider !== 'firoam') {
+        throw new Error(`Unsupported provider: ${mapping.provider}`);
+      }
+
+      // Parse the providerSku to extract skuId and priceId
+      // Format: providerSku should be "skuId:priceId" (e.g., "26:392-1-1-300-M")
+      // For backward compatibility, if no colon, treat as priceId only and fail with helpful error
+      const parts = mapping.providerSku.split(':');
+      if (parts.length !== 2) {
+        throw new Error(
+          `Invalid providerSku format: ${mapping.providerSku}. Expected format: "skuId:priceId" (e.g., "26:392-1-1-300-M")`,
+        );
+      }
+
+      const [skuId, priceId] = parts;
 
       orderPayload = {
-        orderCode: delivery.orderName,
-        packageCode: vendorPlanCode,
-        quantity: 1,
+        skuId,
+        priceId,
+        count: '1',
+        backInfo: '1', // Get full details immediately (one-step flow)
+        customerEmail: delivery.customerEmail || undefined,
       };
     }
 
@@ -63,42 +88,52 @@ export async function handleProvision(jobData: Record<string, unknown>) {
       throw new Error('No order payload available');
     }
 
-    const result = (await fiRoam.addEsimOrder(orderPayload)) as unknown;
+    const result = await fiRoam.addEsimOrder(orderPayload);
 
-    const obj = result as Record<string, unknown>;
-    const encrypted = obj?.encrypted as Record<string, unknown> | undefined;
-    if (encrypted) {
-      const vendorReferenceId = encrypted.vendorReferenceId
-        ? String(encrypted.vendorReferenceId)
-        : undefined;
-      const payloadEncrypted = encrypted.payloadEncrypted
-        ? String(encrypted.payloadEncrypted)
-        : undefined;
-
-      await prisma.esimDelivery.update({
-        where: { id: deliveryId },
-        data: {
-          vendorReferenceId,
-          payloadEncrypted,
-          status: 'delivered',
-        },
-      });
-
-      console.log(`[ProvisionJob] eSIM provisioned successfully: ${vendorReferenceId}`);
-
-      // TODO: Generate QR code
-      // TODO: Send email
-      // TODO: Create Shopify fulfillment
-
-      return { ok: true };
+    // Check if the order was successful
+    if (!result.canonical || !result.db) {
+      const errorMsg = result.error
+        ? `FiRoam error: ${String(result.error)}`
+        : 'FiRoam returned unexpected response';
+      console.log(`[ProvisionJob] Failed: ${errorMsg}`);
+      console.log('[ProvisionJob] Raw response:', JSON.stringify(result.raw, null, 2));
+      throw new Error(errorMsg);
     }
 
-    // If no encrypted payload returned, store raw response
+    // Extract vendor order number from raw response
+    const rawData = result.raw.data;
+    const vendorOrderNum =
+      typeof rawData === 'string' ? rawData : (rawData as Record<string, unknown>)?.orderNum;
+
+    if (!vendorOrderNum) {
+      throw new Error('No order number in FiRoam response');
+    }
+
+    console.log(`[ProvisionJob] FiRoam order created: ${vendorOrderNum}`);
+    console.log(`[ProvisionJob] LPA: ${result.canonical.lpa || 'N/A'}`);
+    console.log(`[ProvisionJob] Activation Code: ${result.canonical.activationCode || 'N/A'}`);
+    console.log(`[ProvisionJob] ICCID: ${result.canonical.iccid || 'N/A'}`);
+
+    // Encrypt the canonical payload for storage
+    const crypto = await import('../../utils/crypto');
+    const payloadEncrypted = await crypto.encrypt(JSON.stringify(result.canonical));
+
     await prisma.esimDelivery.update({
       where: { id: deliveryId },
-      data: { lastError: JSON.stringify(result), status: 'failed' },
+      data: {
+        vendorReferenceId: String(vendorOrderNum),
+        payloadEncrypted,
+        status: 'delivered',
+      },
     });
-    throw new Error('FiRoam returned unexpected response');
+
+    console.log(`[ProvisionJob] eSIM provisioned successfully: ${vendorOrderNum}`);
+
+    // TODO: Generate QR code from result.canonical.lpa
+    // TODO: Send email with QR code and activation instructions
+    // TODO: Create Shopify fulfillment
+
+    return { ok: true };
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err);
     console.error(`[ProvisionJob] Failed:`, msg);

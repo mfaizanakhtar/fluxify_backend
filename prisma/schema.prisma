@@ -46,3 +46,20 @@ model EsimOrder {
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
 }
+
+model ProviderSkuMapping {
+  id            String   @id @default(cuid())
+  shopifySku    String   @unique
+  provider      String   // 'firoam', 'airalo', etc.
+  providerSku   String   // Provider's package/plan code
+  name          String?  // Friendly name
+  region        String?  // e.g., 'EU', 'Global', 'Asia'
+  dataAmount    String?  // e.g., '5GB', '10GB'
+  validity      String?  // e.g., '30 days', '7 days'
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([provider])
+  @@index([isActive])
+}

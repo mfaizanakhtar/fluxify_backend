@@ -6,3 +6,4 @@ dist/
 .idea/
 coverage/
 prisma/dev.db
+firoam-data/*
