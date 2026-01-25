@@ -3,8 +3,20 @@ import FiRoamClient from '../../vendor/firoamClient';
 
 const fiRoam = new FiRoamClient();
 
+interface ProvisionJobData {
+  deliveryId: string;
+  orderId?: string;
+  orderName?: string;
+  lineItemId?: string;
+  variantId?: string;
+  customerEmail?: string;
+  sku?: string | null;
+  orderPayload?: Record<string, unknown>;
+}
+
 export async function handleProvision(jobData: Record<string, unknown>) {
-  const deliveryId = String(jobData.deliveryId || jobData['deliveryId']);
+  const data = jobData as unknown as ProvisionJobData;
+  const deliveryId = String(data.deliveryId || '');
   if (!deliveryId) throw new Error('missing deliveryId');
 
   const delivery = await prisma.esimDelivery.findUnique({ where: { id: deliveryId } });
@@ -16,41 +28,119 @@ export async function handleProvision(jobData: Record<string, unknown>) {
 
   await prisma.esimDelivery.update({ where: { id: deliveryId }, data: { status: 'provisioning' } });
 
-  // Expect job to include an `orderPayload` matching FiRoam `addEsimOrder` fields
-  const orderPayload = (jobData.orderPayload as Record<string, unknown>) || {};
+  console.log(`[ProvisionJob] Processing delivery ${deliveryId} for order ${delivery.orderName}`);
 
   try {
-    const result = (await fiRoam.addEsimOrder(orderPayload)) as unknown;
+    let orderPayload = data.orderPayload;
 
-    const obj = result as Record<string, unknown>;
-    const encrypted = obj?.encrypted as Record<string, unknown> | undefined;
-    if (encrypted) {
-      const vendorReferenceId = encrypted.vendorReferenceId
-        ? String(encrypted.vendorReferenceId)
-        : undefined;
-      const payloadEncrypted = encrypted.payloadEncrypted
-        ? String(encrypted.payloadEncrypted)
-        : undefined;
-      await prisma.esimDelivery.update({
-        where: { id: deliveryId },
-        data: {
-          vendorReferenceId,
-          payloadEncrypted,
-          status: 'delivered',
-        },
+    // If no orderPayload provided, look up SKU mapping
+    if (!orderPayload) {
+      const sku = data.sku;
+
+      if (!sku) {
+        throw new Error('Missing SKU in job data');
+      }
+
+      // Look up provider mapping by SKU
+      const mapping = await prisma.providerSkuMapping.findUnique({
+        where: { shopifySku: sku },
       });
-      return { ok: true };
+
+      if (!mapping) {
+        throw new Error(`No provider mapping found for SKU: ${sku}`);
+      }
+
+      if (!mapping.isActive) {
+        throw new Error(`SKU mapping is inactive: ${sku}`);
+      }
+
+      console.log(
+        `[ProvisionJob] Using provider: ${mapping.provider}, SKU: ${mapping.providerSku}`,
+      );
+
+      // For now, we only support FiRoam
+      if (mapping.provider !== 'firoam') {
+        throw new Error(`Unsupported provider: ${mapping.provider}`);
+      }
+
+      // Parse the providerSku to extract skuId and priceId
+      // Format: providerSku should be "skuId:priceId" (e.g., "26:392-1-1-300-M")
+      // For backward compatibility, if no colon, treat as priceId only and fail with helpful error
+      const parts = mapping.providerSku.split(':');
+      if (parts.length !== 2) {
+        throw new Error(
+          `Invalid providerSku format: ${mapping.providerSku}. Expected format: "skuId:priceId" (e.g., "26:392-1-1-300-M")`,
+        );
+      }
+
+      const [skuId, priceId] = parts;
+
+      orderPayload = {
+        skuId,
+        priceId,
+        count: '1',
+        backInfo: '1', // Get full details immediately (one-step flow)
+        customerEmail: delivery.customerEmail || undefined,
+      };
     }
 
-    // If no encrypted payload returned, store raw response
+    if (!orderPayload) {
+      throw new Error('No order payload available');
+    }
+
+    const result = await fiRoam.addEsimOrder(orderPayload);
+
+    // Check if the order was successful
+    if (!result.canonical || !result.db) {
+      const errorMsg = result.error
+        ? `FiRoam error: ${String(result.error)}`
+        : 'FiRoam returned unexpected response';
+      console.log(`[ProvisionJob] Failed: ${errorMsg}`);
+      console.log('[ProvisionJob] Raw response:', JSON.stringify(result.raw, null, 2));
+      throw new Error(errorMsg);
+    }
+
+    // Extract vendor order number from raw response
+    const rawData = result.raw.data;
+    const vendorOrderNum =
+      typeof rawData === 'string' ? rawData : (rawData as Record<string, unknown>)?.orderNum;
+
+    if (!vendorOrderNum) {
+      throw new Error('No order number in FiRoam response');
+    }
+
+    console.log(`[ProvisionJob] FiRoam order created: ${vendorOrderNum}`);
+    console.log(`[ProvisionJob] LPA: ${result.canonical.lpa || 'N/A'}`);
+    console.log(`[ProvisionJob] Activation Code: ${result.canonical.activationCode || 'N/A'}`);
+    console.log(`[ProvisionJob] ICCID: ${result.canonical.iccid || 'N/A'}`);
+
+    // Encrypt the canonical payload for storage
+    const crypto = await import('../../utils/crypto');
+    const payloadEncrypted = await crypto.encrypt(JSON.stringify(result.canonical));
+
     await prisma.esimDelivery.update({
       where: { id: deliveryId },
-      data: { lastError: JSON.stringify(result), status: 'failed' },
+      data: {
+        vendorReferenceId: String(vendorOrderNum),
+        payloadEncrypted,
+        status: 'delivered',
+      },
     });
-    throw new Error('FiRoam returned unexpected response');
+
+    console.log(`[ProvisionJob] eSIM provisioned successfully: ${vendorOrderNum}`);
+
+    // TODO: Generate QR code from result.canonical.lpa
+    // TODO: Send email with QR code and activation instructions
+    // TODO: Create Shopify fulfillment
+
+    return { ok: true };
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err);
-    await prisma.esimDelivery.update({ where: { id: deliveryId }, data: { lastError: msg } });
+    console.error(`[ProvisionJob] Failed:`, msg);
+    await prisma.esimDelivery.update({
+      where: { id: deliveryId },
+      data: { lastError: msg, status: 'failed' },
+    });
     throw err;
   }
 }

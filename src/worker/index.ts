@@ -1,37 +1,47 @@
 import 'dotenv/config';
-import { startBoss } from '../queue/pgBoss';
+import { initializeJobQueue, stopJobQueue } from '../queue/jobQueue';
 import { handleProvision } from './jobs/provisionEsim';
 
 async function run() {
-  const boss = await startBoss();
-  console.log('pg-boss started');
+  console.log('[Worker] Starting worker process...');
 
-  // Register worker for provision_esim
-  await boss.work('provision_esim', async (job: unknown) => {
+  const boss = await initializeJobQueue();
+
+  // Register worker for provision-esim jobs
+  await boss.work('provision-esim', { teamSize: 5, teamConcurrency: 2 }, async (job: unknown) => {
     const j = job as Record<string, unknown>;
     const jobId = j.id ? String(j.id) : 'unknown';
     const jobData = (j.data as Record<string, unknown>) || {};
-    console.log('processing job', jobId, jobData);
+
+    console.log(`[Worker] Processing job ${jobId}`);
+
     try {
       await handleProvision(jobData);
-      await boss.complete(jobId);
-      console.log('job completed', jobId);
+      console.log(`[Worker] Job ${jobId} completed successfully`);
     } catch (err) {
-      console.error('job failed', jobId, err);
-      // let pg-boss handle retries by rethrowing
+      console.error(`[Worker] Job ${jobId} failed:`, err);
+      // Re-throw to let pg-boss handle retries
       throw err;
     }
   });
 
-  // graceful shutdown
+  console.log('[Worker] Worker registered and ready to process jobs');
+
+  // Graceful shutdown
   process.on('SIGINT', async () => {
-    console.log('shutting down worker');
-    await boss.stop();
+    console.log('[Worker] Shutting down worker...');
+    await stopJobQueue();
+    process.exit(0);
+  });
+
+  process.on('SIGTERM', async () => {
+    console.log('[Worker] Shutting down worker...');
+    await stopJobQueue();
     process.exit(0);
   });
 }
 
 run().catch((err) => {
-  console.error('worker error', err);
+  console.error('[Worker] Fatal error:', err);
   process.exit(1);
 });

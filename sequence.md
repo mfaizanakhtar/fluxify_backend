@@ -30,4 +30,4 @@ sequenceDiagram
     Worker->>DB: status=failed + last_error
     Worker->>Queue: retry with backoff (limited attempts)
   end
-  ```
+```
