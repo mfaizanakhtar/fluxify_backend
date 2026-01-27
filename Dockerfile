@@ -57,6 +57,7 @@ USER nodejs
 # Expose port (API only, but doesn't hurt for worker)
 EXPOSE 3000
 
-# Default command (API server)
-# Override with: docker run <image> node dist/worker/index.js
-CMD ["node", "dist/index.js"]
+# Run migrations on container start, then start app
+# For API: migrations run before server starts
+# For Worker: migrations run (idempotent) before worker starts
+CMD ["sh", "-c", "npx prisma migrate deploy && node dist/index.js"]
