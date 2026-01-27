@@ -13,7 +13,7 @@ async function init() {
 
     if (count === 0) {
       console.log('🌱 Running seed script...');
-      execSync('npx ts-node prisma/seed-sku-mappings.ts', { stdio: 'inherit' });
+      execSync('node dist/prisma/seed-sku-mappings.js', { stdio: 'inherit' });
       console.log('✅ Seeding completed');
     } else {
       console.log(`✅ SKU mappings already exist (${count} records), skipping seed`);
