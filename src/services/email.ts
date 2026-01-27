@@ -346,10 +346,14 @@ export async function sendDeliveryEmail(
     console.log(`[EmailService] QR code generated, size: ${qrBuffer.length} bytes`);
 
     // Build email content
+    console.log(`[EmailService] Building email HTML...`);
     const htmlBody = buildEmailHtml(data);
+    console.log(`[EmailService] Building email text...`);
     const textBody = buildEmailText(data);
+    console.log(`[EmailService] Email content built`);
 
     const transporter = getTransporter();
+    console.log(`[EmailService] Transporter created:`, !!transporter);
 
     if (!transporter) {
       // Dry run mode
@@ -374,6 +378,7 @@ export async function sendDeliveryEmail(
       `[EmailService] Sending email via ${process.env.SMTP_HOST}:${process.env.SMTP_PORT}`,
     );
     console.log(`[EmailService] From: ${fromEmail}, To: ${to}, BCC: ${bccEmail || 'none'}`);
+    console.log(`[EmailService] About to call sendMail()...`);
 
     const info = await transporter.sendMail({
       from: fromEmail,
