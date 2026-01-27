@@ -1,5 +1,6 @@
 import prisma from '../../db/prisma';
 import FiRoamClient from '../../vendor/firoamClient';
+import { sendDeliveryEmail, recordDeliveryAttempt, type EsimPayload } from '../../services/email';
 
 const fiRoam = new FiRoamClient();
 
@@ -11,6 +12,7 @@ interface ProvisionJobData {
   variantId?: string;
   customerEmail?: string;
   sku?: string | null;
+  productName?: string;
   orderPayload?: Record<string, unknown>;
 }
 
@@ -32,6 +34,12 @@ export async function handleProvision(jobData: Record<string, unknown>) {
 
   try {
     let orderPayload = data.orderPayload;
+    let mappingInfo: {
+      name?: string;
+      region?: string;
+      dataAmount?: string;
+      validity?: string;
+    } | null = null;
 
     // If no orderPayload provided, look up SKU mapping
     if (!orderPayload) {
@@ -53,6 +61,14 @@ export async function handleProvision(jobData: Record<string, unknown>) {
       if (!mapping.isActive) {
         throw new Error(`SKU mapping is inactive: ${sku}`);
       }
+
+      // Store mapping info for email
+      mappingInfo = {
+        name: mapping.name || undefined,
+        region: mapping.region || undefined,
+        dataAmount: mapping.dataAmount || undefined,
+        validity: mapping.validity || undefined,
+      };
 
       console.log(
         `[ProvisionJob] Using provider: ${mapping.provider}, SKU: ${mapping.providerSku}`,
@@ -205,8 +221,44 @@ export async function handleProvision(jobData: Record<string, unknown>) {
 
     console.log(`[ProvisionJob] eSIM provisioned successfully: ${vendorOrderNum}`);
 
-    // TODO: Generate QR code from result.canonical.lpa
-    // TODO: Send email with QR code and activation instructions
+    // Send delivery email with QR code
+    if (delivery.customerEmail) {
+      console.log(`[ProvisionJob] Sending delivery email to ${delivery.customerEmail}`);
+
+      const esimPayload: EsimPayload = {
+        lpa: result.canonical.lpa || '',
+        activationCode: result.canonical.activationCode || '',
+        iccid: result.canonical.iccid || '',
+      };
+
+      const emailResult = await sendDeliveryEmail({
+        to: delivery.customerEmail,
+        orderNumber: delivery.orderName,
+        productName: mappingInfo?.name || data.productName,
+        esimPayload,
+        region: mappingInfo?.region,
+        dataAmount: mappingInfo?.dataAmount,
+        validity: mappingInfo?.validity,
+      });
+
+      // Record the delivery attempt
+      await recordDeliveryAttempt(
+        prisma,
+        deliveryId,
+        'email',
+        emailResult.success ? `sent:${emailResult.messageId}` : `failed:${emailResult.error}`,
+      );
+
+      if (emailResult.success) {
+        console.log(`[ProvisionJob] Delivery email sent: ${emailResult.messageId}`);
+      } else {
+        console.error(`[ProvisionJob] Email delivery failed: ${emailResult.error}`);
+        // Don't throw - eSIM is provisioned, email failure is recoverable
+      }
+    } else {
+      console.warn(`[ProvisionJob] No customer email - skipping delivery email`);
+    }
+
     // TODO: Create Shopify fulfillment
 
     return { ok: true };

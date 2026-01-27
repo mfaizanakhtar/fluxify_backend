@@ -1,6 +1,5 @@
 import { describe, it, expect } from 'vitest';
 import FiRoamClient from '../vendor/firoamClient';
-// @ts-expect-error - qrcode doesn't have TypeScript types
 import QRCode from 'qrcode';
 import * as fs from 'fs';
 import * as path from 'path';
