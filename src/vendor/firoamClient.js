@@ -1,0 +1,286 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+// Vendor client stub — implement per FiRoam_documentation.txt
+const axios_1 = __importDefault(require("axios"));
+const crypto_1 = __importDefault(require("crypto"));
+const crypto_2 = require("../utils/crypto");
+const prisma_1 = __importDefault(require("../db/prisma"));
+const firoamSchemas_1 = require("./firoamSchemas");
+function createSign(params, signKey) {
+    const copy = { ...params };
+    delete copy.sign;
+    const keys = Object.keys(copy).sort();
+    // Join params without separator (per FiRoam examples)
+    const buffer = keys.map((k) => `${k}=${String(copy[k])}`).join('');
+    // Python example uses urllib.parse.quote for URL encoding before MD5
+    const content = encodeURIComponent(buffer + signKey);
+    const md5 = crypto_1.default.createHash('md5').update(content, 'utf-8').digest('hex').toUpperCase();
+    return md5;
+}
+/**
+ * Check if FiRoam API response indicates success
+ */
+function isSuccessResponse(resp) {
+    const response = resp;
+    return response && (response.code === 0 || response.code === '0');
+}
+/**
+ * Extract card data from various possible response structures
+ */
+function extractCardData(orderDetails) {
+    const details = orderDetails;
+    const data = details?.data;
+    return (data?.cardApiDtoList ||
+        data?.cards ||
+        data?.cardList ||
+        []);
+}
+/**
+ * Normalize card data to canonical eSIM payload format
+ */
+function normalizeCardToCanonical(card, orderNum) {
+    const cardData = card;
+    return {
+        vendorId: orderNum,
+        lpa: cardData?.code ||
+            cardData?.lpa ||
+            cardData?.lpaString ||
+            cardData?.sm_dp_address ||
+            undefined,
+        activationCode: cardData?.activationCode || cardData?.activation_code || undefined,
+        iccid: cardData?.iccid || cardData?.mobileNumber || undefined,
+    };
+}
+class FiRoamClient {
+    baseUrl;
+    phone;
+    password;
+    signKey;
+    token;
+    http;
+    constructor() {
+        this.baseUrl = process.env.FIROAM_BASE_URL || 'https://bpm.roamwifi.hk';
+        this.phone = process.env.FIROAM_PHONE;
+        this.password = process.env.FIROAM_PASSWORD;
+        this.signKey = process.env.FIROAM_SIGN_KEY || '1234567890qwertyuiopasdfghjklzxc';
+        this.http = axios_1.default.create({ baseURL: this.baseUrl, timeout: 15000 });
+    }
+    async loginIfNeeded() {
+        if (this.token)
+            return this.token;
+        if (!this.phone || !this.password)
+            throw new Error('FIROAM_PHONE/FIROAM_PASSWORD not set');
+        const payload = { phonenumber: this.phone, password: this.password };
+        payload['sign'] = createSign(payload, this.signKey);
+        // Per Python example in documentation: login uses GET with query params, not POST
+        const resp = await this.http.get('/api_order/login', { params: payload });
+        const data = resp.data;
+        if (!data || !data.data || !data.data.token)
+            throw new Error(`FiRoam login failed: ${JSON.stringify(data)}`);
+        this.token = data.data.token;
+        return this.token;
+    }
+    async post(path, params) {
+        await this.loginIfNeeded();
+        const body = { ...params, token: this.token };
+        body['sign'] = createSign(body, this.signKey);
+        // FiRoam API expects form-urlencoded data, not JSON
+        const resp = await this.http.post(path, new URLSearchParams(body), {
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        });
+        return resp.data;
+    }
+    /**
+     * Place an eSIM order. The `orderPayload` should follow FiRoam `addEsimOrder` spec.
+     * Returns the API response (including orderNum / details) and a canonical payload if available.
+     *
+     * Flow Options:
+     * - One-step (recommended): Set backInfo="1" in orderPayload to get full details immediately
+     * - Two-step (legacy): Omit backInfo, will automatically call getOrderInfo() after order creation
+     *
+     * @param orderPayload - Order parameters (include backInfo="1" for one-step flow)
+     */
+    async addEsimOrder(orderPayload) {
+        const payload = (0, firoamSchemas_1.validateAddEsimOrder)(orderPayload);
+        // Debug: Log the exact payload being sent to FiRoam
+        console.log('[FiRoamClient] Sending order payload:', JSON.stringify(payload, null, 2));
+        const data = await this.post('/api_esim/addEsimOrder', payload);
+        if (!isSuccessResponse(data)) {
+            return { raw: data };
+        }
+        const orderNum = this.extractOrderNumber(data);
+        if (!orderNum) {
+            return { raw: data };
+        }
+        try {
+            const orderDetails = await this.fetchOrderDetails(data, orderNum);
+            const canonical = this.extractAndValidateCanonical(orderDetails, orderNum);
+            if (!canonical) {
+                return { raw: data, canonical: undefined };
+            }
+            const dbRecord = await this.persistOrderToDatabase(orderNum, canonical);
+            return { raw: data, canonical, db: { id: dbRecord.id } };
+        }
+        catch (err) {
+            return { raw: data, canonical: undefined, error: err };
+        }
+    }
+    /**
+     * Extract order number from API response (handles both string and object formats)
+     */
+    extractOrderNumber(data) {
+        const response = data;
+        const responseData = response.data;
+        return typeof responseData === 'string'
+            ? responseData
+            : responseData?.orderNum;
+    }
+    /**
+     * Fetch full order details (one-step or two-step flow)
+     */
+    async fetchOrderDetails(data, orderNum) {
+        const response = data;
+        const responseData = response.data;
+        const hasFullDetails = responseData &&
+            typeof responseData === 'object' &&
+            responseData.orderNum &&
+            responseData.cardApiDtoList;
+        if (hasFullDetails) {
+            return data; // One-step flow: already have full details
+        }
+        return await this.getOrderInfo(orderNum); // Two-step flow
+    }
+    /**
+     * Extract and validate canonical eSIM payload from order details
+     */
+    extractAndValidateCanonical(orderDetails, orderNum) {
+        const cards = extractCardData(orderDetails);
+        const firstCard = cards[0] || {};
+        const canonicalRaw = normalizeCardToCanonical(firstCard, orderNum);
+        try {
+            return (0, firoamSchemas_1.validateCanonical)(canonicalRaw);
+        }
+        catch (zerr) {
+            // Persist failed validation for debugging
+            this.persistInvalidOrder(orderNum, canonicalRaw, zerr).catch(console.error);
+            return undefined;
+        }
+    }
+    /**
+     * Persist validated order to database
+     */
+    async persistOrderToDatabase(orderNum, canonical) {
+        return await prisma_1.default.esimOrder.create({
+            data: {
+                vendorReferenceId: String(orderNum),
+                payloadJson: canonical,
+                payloadEncrypted: (0, crypto_2.encrypt)(JSON.stringify(canonical)),
+                status: 'created',
+            },
+        });
+    }
+    /**
+     * Persist order with invalid payload for debugging
+     */
+    async persistInvalidOrder(orderNum, canonicalRaw, error) {
+        await prisma_1.default.esimOrder.create({
+            data: {
+                vendorReferenceId: String(orderNum),
+                payloadJson: canonicalRaw,
+                payloadEncrypted: (0, crypto_2.encrypt)(JSON.stringify(canonicalRaw)),
+                status: 'invalid_payload',
+                lastError: error instanceof Error ? error.message : String(error),
+            },
+        });
+    }
+    /**
+     * Fetch full order details by orderNum.
+     * Used internally after addEsimOrder (two-step flow) or can be called manually.
+     *
+     * @param orderNum - Order number returned from addEsimOrder
+     * @returns Full order details including cardApiDtoList with eSIM credentials
+     */
+    async getOrderInfo(orderNum) {
+        const resp = await this.post('/api_esim/getOrderInfo', { orderNum });
+        return resp;
+    }
+    /**
+     * Query the vendor for supported eSIM SKUs.
+     * Returns { raw, skus } when successful, otherwise { raw }.
+     */
+    async getSkus() {
+        const resp = await this.post('/api_esim/getSkus', {});
+        if (isSuccessResponse(resp) && resp.data) {
+            try {
+                const skus = (0, firoamSchemas_1.validateSkus)(resp.data);
+                return { raw: resp, skus };
+            }
+            catch (zerr) {
+                return { raw: resp, error: zerr };
+            }
+        }
+        return { raw: resp };
+    }
+    /**
+     * Get SKUs grouped by continent.
+     * Returns { raw, grouped } when successful, otherwise { raw }.
+     */
+    async getSkuByGroup() {
+        const resp = await this.post('/api_esim/getSkuByGroup', {});
+        if (isSuccessResponse(resp) && resp.data) {
+            try {
+                const grouped = (0, firoamSchemas_1.validateSkuByGroup)(resp.data);
+                return { raw: resp, grouped };
+            }
+            catch (zerr) {
+                return { raw: resp, error: zerr };
+            }
+        }
+        return { raw: resp };
+    }
+    /**
+     * Get the list of supported packages for a specific SKU.
+     * Returns { raw, packageData } when successful, otherwise { raw }.
+     *
+     * @param skuId - The SKU ID to get packages for
+     */
+    async getPackages(skuId) {
+        const resp = await this.post('/api_esim/getPackages', { skuId });
+        if (isSuccessResponse(resp) && resp.data) {
+            try {
+                const packageData = (0, firoamSchemas_1.validatePackages)(resp.data);
+                return { raw: resp, packageData };
+            }
+            catch (zerr) {
+                return { raw: resp, error: zerr };
+            }
+        }
+        return { raw: resp };
+    }
+    /**
+     * Cancel/refund an eSIM order.
+     *
+     * @param params - Cancellation parameters
+     * @param params.orderNum - The order number to cancel
+     * @param params.iccids - Comma-separated ICCIDs to cancel (required for FiRoam API)
+     * @returns { raw, success, message }
+     */
+    async cancelOrder(params) {
+        // Note: FiRoam API has issues with optional 'remark' parameter causing signature failures.
+        // Keep payload minimal for reliability.
+        const body = {
+            orderNum: params.orderNum,
+            iccids: params.iccids,
+        };
+        const resp = await this.post('/api_esim/refundOrder', body);
+        return {
+            raw: resp,
+            success: isSuccessResponse(resp),
+            message: resp?.message || 'Unknown error',
+        };
+    }
+}
+exports.default = FiRoamClient;

@@ -13,6 +13,6 @@
     "skipLibCheck": true,
     "types": ["node"]
   },
-  "include": ["src", "scripts", "prisma"],
+  "include": ["src", "scripts"],
   "exclude": ["node_modules", "dist"]
 }

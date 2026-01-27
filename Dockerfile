@@ -21,7 +21,7 @@ COPY scripts ./scripts
 # Generate Prisma client
 RUN npx prisma generate
 
-# Build TypeScript (compiles src/ and scripts/)
+# Build TypeScript (outputs to dist/src/ and dist/scripts/)
 RUN npm run build
 
 # Stage 2: Production
@@ -61,4 +61,4 @@ EXPOSE 3000
 # Run initialization script (migrations + seeding), then start app
 # For API: init runs before server starts
 # For Worker: init runs (idempotent) before worker starts
-CMD ["sh", "-c", "node dist/scripts/init-railway.js && node dist/index.js"]
+CMD ["sh", "-c", "node dist/scripts/init-railway.js && node dist/src/index.js"]
