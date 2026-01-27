@@ -17,11 +17,11 @@ export function validateCanonical(payload: unknown) {
 export const AddEsimOrderSchema = z
   .object({
     // Required fields per FiRoam documentation
-    skuId: z.string(), // Product ID
-    priceId: z.string(), // Package price ID
+    skuId: z.string(), // Product ID (country)
+    priceId: z.string().optional(), // Package price ID (optional for daypass with API code)
     count: z.string(), // Order quantity
     // Conditional fields
-    daypassDays: z.string().optional(), // Correct field name! Required if supportDaypass=1
+    daypassDays: z.string().optional(), // Required if supportDaypass=1
     beginDate: z.string().optional(), // Required if mustDate=1, format: MM/dd/yyyy
     // Optional fields
     remark: z.string().optional(),

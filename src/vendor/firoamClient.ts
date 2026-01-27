@@ -122,6 +122,10 @@ export default class FiRoamClient {
    */
   async addEsimOrder(orderPayload: unknown) {
     const payload: AddEsimOrderInput = validateAddEsimOrder(orderPayload);
+    
+    // Debug: Log the exact payload being sent to FiRoam
+    console.log('[FiRoamClient] Sending order payload:', JSON.stringify(payload, null, 2));
+    
     const data = await this.post('/api_esim/addEsimOrder', payload as Record<string, unknown>);
 
     if (!isSuccessResponse(data)) {

@@ -1,0 +1,70 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: esim_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: esim
+      POSTGRES_PASSWORD: esim_dev_password
+      POSTGRES_DB: esim
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U esim"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: esim_api
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: postgresql://esim:esim_dev_password@postgres:5432/esim
+      SHOPIFY_CLIENT_ID: ${SHOPIFY_CLIENT_ID}
+      SHOPIFY_CLIENT_SECRET: ${SHOPIFY_CLIENT_SECRET}
+      SHOPIFY_WEBHOOK_SECRET: ${SHOPIFY_WEBHOOK_SECRET}
+      SHOPIFY_SHOP_DOMAIN: ${SHOPIFY_SHOP_DOMAIN}
+      FIROAM_BASE_URL: ${FIROAM_BASE_URL}
+      FIROAM_PHONE: ${FIROAM_PHONE}
+      FIROAM_PASSWORD: ${FIROAM_PASSWORD}
+      FIROAM_SIGN_KEY: ${FIROAM_SIGN_KEY}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: sh -c "npx prisma migrate deploy && node dist/index.js"
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: esim_worker
+    restart: unless-stopped
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: postgresql://esim:esim_dev_password@postgres:5432/esim
+      SHOPIFY_CLIENT_ID: ${SHOPIFY_CLIENT_ID}
+      SHOPIFY_CLIENT_SECRET: ${SHOPIFY_CLIENT_SECRET}
+      SHOPIFY_SHOP_DOMAIN: ${SHOPIFY_SHOP_DOMAIN}
+      FIROAM_BASE_URL: ${FIROAM_BASE_URL}
+      FIROAM_PHONE: ${FIROAM_PHONE}
+      FIROAM_PASSWORD: ${FIROAM_PASSWORD}
+      FIROAM_SIGN_KEY: ${FIROAM_SIGN_KEY}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: node dist/worker/index.js
+
+volumes:
+  postgres_data:

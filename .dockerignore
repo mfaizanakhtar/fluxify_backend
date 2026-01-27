@@ -1,0 +1,44 @@
+# Node
+node_modules
+npm-debug.log
+yarn-error.log
+
+# Build output
+dist
+*.tsbuildinfo
+
+# Development
+.env
+.env.local
+.env*.local
+
+# Git
+.git
+.gitignore
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Tests
+coverage
+test-output
+
+# Scripts
+scripts/ngrok.sh
+
+# CSV exports
+csv-exports
+
+# Documentation
+*.md
+!README.md
+
+# CI/CD
+.github

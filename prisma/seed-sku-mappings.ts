@@ -10,23 +10,41 @@ async function main() {
   console.log('🌱 Seeding SKU mappings...\n');
 
   // Example SKU mappings using real FiRoam data
-  // Format: providerSku should be "skuId:apiCode" (e.g., "26:392-0-3-1-G")
-  // Get apiCode from firoam-data/firoam-packages-<countryCode>.csv
+  // Format: providerSku should be "skuId:priceId" (e.g., "26:424")
+  // Get priceId from firoam-data/firoam-packages-<countryCode>.csv or use npm run find:priceid
   const mappings = [
+    // Fixed package example
     {
-      shopifySku: 'ESIM-JAPAN-1GB-3D',
+      shopifySku: 'ESIM-JAPAN-1GB-3D-FIXED',
       provider: 'firoam',
-      providerSku: '26:392-0-3-1-G', // Japan 1GB / 3 days
-      name: 'Japan 1GB eSIM',
+      providerSku: '26:424', // Japan 1GB / 3 days (fixed validity)
+      packageType: 'fixed',
+      daysCount: null,
+      name: 'Japan 1GB eSIM (3 Days Total)',
       region: 'Asia',
       dataAmount: '1GB',
+      validity: '3 days',
+      isActive: true,
+    },
+    // Daypass package example
+    {
+      shopifySku: 'ESIM-JAPAN-1GB-3D-DAYPASS',
+      provider: 'firoam',
+      providerSku: '26:daypass_1gb', // Japan 1GB/day (use daypass priceId)
+      packageType: 'daypass',
+      daysCount: 3, // 3 day passes = 3GB total
+      name: 'Japan 1GB/day eSIM (3 Days)',
+      region: 'Asia',
+      dataAmount: '1GB/day',
       validity: '3 days',
       isActive: true,
     },
     {
       shopifySku: 'ESIM-JAPAN-5GB-7D',
       provider: 'firoam',
-      providerSku: '26:392-0-7-5-G', // Japan 5GB / 7 days
+      providerSku: '26:5gb_7d_priceid', // Japan 5GB / 7 days
+      packageType: 'fixed',
+      daysCount: null,
       name: 'Japan 5GB eSIM',
       region: 'Asia',
       dataAmount: '5GB',
@@ -36,7 +54,9 @@ async function main() {
     {
       shopifySku: 'ESIM-USA-1GB-3D',
       provider: 'firoam',
-      providerSku: '7:840-0-3-1-G', // USA 1GB / 3 days
+      providerSku: '7:usa_1gb_3d', // USA 1GB / 3 days
+      packageType: 'fixed',
+      daysCount: null,
       name: 'United States 1GB eSIM',
       region: 'North America',
       dataAmount: '1GB',
@@ -46,7 +66,9 @@ async function main() {
     {
       shopifySku: 'ESIM-USA-10GB-30D',
       provider: 'firoam',
-      providerSku: '7:840-0-30-10-G', // USA 10GB / 30 days
+      providerSku: '7:usa_10gb_30d', // USA 10GB / 30 days
+      packageType: 'fixed',
+      daysCount: null,
       name: 'United States 10GB eSIM',
       region: 'North America',
       dataAmount: '10GB',
@@ -56,7 +78,9 @@ async function main() {
     {
       shopifySku: 'ESIM-MALAYSIA-1GB-3D',
       provider: 'firoam',
-      providerSku: '13:458-0-3-1-G', // Malaysia 1GB / 3 days
+      providerSku: '13:malaysia_1gb_3d', // Malaysia 1GB / 3 days
+      packageType: 'fixed',
+      daysCount: null,
       name: 'Malaysia 1GB eSIM',
       region: 'Asia',
       dataAmount: '1GB',
