@@ -12,8 +12,8 @@ async function init() {
     const count = await prisma.providerSkuMapping.count();
 
     if (count === 0) {
-      console.log('🌱 Running seed script...');
-      execSync('node dist/prisma/seed-sku-mappings.js', { stdio: 'inherit' });
+      console.log('🌱 Running seed script (7356 mappings)...');
+      execSync('node dist/prisma/seed-all-mappings.js', { stdio: 'inherit' });
       console.log('✅ Seeding completed');
     } else {
       console.log(`✅ SKU mappings already exist (${count} records), skipping seed`);
