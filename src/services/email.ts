@@ -155,59 +155,86 @@ function buildEmailHtml(data: DeliveryEmailData): string {
       <div class="qr-section">
         <h2>📲 Quick Install</h2>
         <p style="margin-bottom: 20px;">
-          <a href="${esimPayload.lpa}" style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 16px 32px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);">
+          <a href="https://esimsetup.apple.com/esim_qrcode_provisioning?carddata=${encodeURIComponent(esimPayload.lpa)}" style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white !important; padding: 16px 32px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);">
             📱 Install eSIM Now
           </a>
         </p>
-        <p style="color: #666; font-size: 14px; margin-bottom: 24px;">
-          <em>Tap the button above to install directly, or scan the QR code below:</em>
+        <p style="color: #666; font-size: 14px; margin-bottom: 20px;">
+          <em>Tap the button above to install instantly on iPhone, or scan the QR code below:</em>
         </p>
         <div class="qr-code">
           <img src="cid:qrcode" alt="eSIM QR Code" />
         </div>
+        <p style="margin-top: 20px; font-size: 12px; color: #888;">
+          The install button works on iPhone. Android users should scan the QR code.
+        </p>
       </div>
 
       <div class="instructions">
-        <h2>📖 Installation Instructions</h2>
+        <h2>📖 How to Install</h2>
         
         <div class="platform">
-          <h4>🍎 iPhone (iOS 12.1+)</h4>
+          <h4>🍎 iPhone (iOS 17.4+)</h4>
           <div class="step">
             <span class="step-number">1</span>
-            <span class="step-content">Tap the <strong>"Install eSIM Now"</strong> button above, or go to <strong>Settings → Cellular → Add eSIM</strong></span>
+            <span class="step-content">Make sure you're connected to <strong>WiFi</strong></span>
           </div>
           <div class="step">
             <span class="step-number">2</span>
-            <span class="step-content">If using manual method: Tap <strong>"Use QR Code"</strong> and scan the code above</span>
+            <span class="step-content">Tap the <strong>"Install eSIM Now"</strong> button above (easiest method)</span>
           </div>
           <div class="step">
             <span class="step-number">3</span>
-            <span class="step-content">Follow the prompts to complete installation</span>
+            <span class="step-content"><em>OR</em> Go to <strong>Settings → Cellular → Add eSIM</strong> and scan the QR code</span>
           </div>
           <div class="step">
             <span class="step-number">4</span>
-            <span class="step-content">Label your eSIM (e.g., "Travel") and enable it when you arrive</span>
+            <span class="step-content">After installation, keep the eSIM <strong>turned off</strong> until you arrive at your destination</span>
           </div>
         </div>
 
         <div class="platform">
-          <h4>🤖 Android (Pixel, Samsung, etc.)</h4>
+          <h4>🤖 Android</h4>
           <div class="step">
             <span class="step-number">1</span>
-            <span class="step-content">Tap the <strong>"Install eSIM Now"</strong> button above to install directly</span>
+            <span class="step-content">Make sure you're connected to <strong>WiFi</strong></span>
           </div>
           <div class="step">
             <span class="step-number">2</span>
-            <span class="step-content">Or go to <strong>Settings → Network & Internet → SIMs → Add eSIM</strong></span>
+            <span class="step-content">Go to <strong>Settings → Network & Internet → SIMs</strong></span>
           </div>
           <div class="step">
             <span class="step-number">3</span>
-            <span class="step-content">Choose <strong>"Scan QR code"</strong> and scan the code above</span>
+            <span class="step-content">Tap <strong>Add eSIM</strong> or <strong>Download a SIM instead?</strong></span>
           </div>
           <div class="step">
             <span class="step-number">4</span>
-            <span class="step-content">Enable the eSIM when you're ready to use it</span>
+            <span class="step-content">Choose <strong>Scan QR code</strong> and scan the code above</span>
           </div>
+          <div class="step">
+            <span class="step-number">5</span>
+            <span class="step-content">After installation, keep the eSIM <strong>turned off</strong> until you arrive</span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="platform" style="background: #fffbeb; border-left-color: #f59e0b; margin-top: 20px;">
+        <h4 style="color: #92400e;">🔌 How to Activate</h4>
+        <div class="step">
+          <span class="step-number">1</span>
+          <span class="step-content">When you arrive at your destination, go to <strong>Settings → Cellular/Mobile</strong></span>
+        </div>
+        <div class="step">
+          <span class="step-number">2</span>
+          <span class="step-content">Select your eSIM and <strong>turn it on</strong></span>
+        </div>
+        <div class="step">
+          <span class="step-number">3</span>
+          <span class="step-content">Enable <strong>Data Roaming</strong> for the eSIM</span>
+        </div>
+        <div class="step">
+          <span class="step-number">4</span>
+          <span class="step-content">If no connection appears, toggle <strong>Airplane Mode</strong> on/off or restart your phone</span>
         </div>
       </div>
 
@@ -223,12 +250,13 @@ function buildEmailHtml(data: DeliveryEmailData): string {
       </div>
 
       <div class="warning">
-        <strong>⚠️ Important:</strong>
+        <strong>⚠️ Important Notes:</strong>
         <ul>
-          <li>Install the eSIM <strong>before</strong> you travel (requires internet connection)</li>
-          <li>Keep your QR code safe - each eSIM can only be installed <strong>once</strong></li>
-          <li>Don't delete the eSIM after installation, or it cannot be reinstalled</li>
-          <li>Turn on the eSIM when you arrive at your destination</li>
+          <li>Each QR code can only be installed <strong>once</strong> - keep this email safe</li>
+          <li><strong>Install before you travel</strong> (requires WiFi connection)</li>
+          <li>Keep the eSIM <strong>turned off</strong> until you reach your destination</li>
+          <li>Enable <strong>Data Roaming</strong> when you're ready to use it</li>
+          <li>Don't delete the eSIM profile - it cannot be reinstalled</li>
         </ul>
       </div>
     </div>
