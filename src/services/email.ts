@@ -1,9 +1,10 @@
 /**
  * Email Service for eSIM Delivery
- * Uses Nodemailer with SMTP
+ * Supports both Resend API (production) and Nodemailer SMTP (local dev)
  */
 import nodemailer from 'nodemailer';
 import type { Transporter } from 'nodemailer';
+import { Resend } from 'resend';
 import QRCode from 'qrcode';
 import type { PrismaClient } from '@prisma/client';
 
@@ -352,6 +353,42 @@ export async function sendDeliveryEmail(
     const textBody = buildEmailText(data);
     console.log(`[EmailService] Email content built`);
 
+    const fromEmail = process.env.EMAIL_FROM || process.env.SMTP_USER || 'orders@fluxyfi.com';
+    const bccEmail = process.env.EMAIL_BCC;
+
+    // Try Resend first (for production/Railway)
+    const resendApiKey = process.env.RESEND_API_KEY;
+    if (resendApiKey) {
+      console.log(`[EmailService] Using Resend API for delivery`);
+      const resend = new Resend(resendApiKey);
+
+      const result = await resend.emails.send({
+        from: fromEmail,
+        to: to,
+        bcc: bccEmail,
+        subject: `Your eSIM is Ready! - Order ${orderNumber}`,
+        html: htmlBody,
+        text: textBody,
+        attachments: [
+          {
+            filename: 'esim-qrcode.png',
+            content: qrBuffer,
+          },
+        ],
+      });
+
+      if (result.error) {
+        throw new Error(`Resend error: ${result.error.message}`);
+      }
+
+      console.log(`[EmailService] ✅ Email sent via Resend: ${result.data?.id}`);
+      return {
+        success: true,
+        messageId: result.data?.id,
+      };
+    }
+
+    // Fall back to SMTP (for local development)
     const transporter = getTransporter();
     console.log(`[EmailService] Transporter created:`, !!transporter);
 
@@ -370,12 +407,9 @@ export async function sendDeliveryEmail(
       };
     }
 
-    // Send email
-    const fromEmail = process.env.EMAIL_FROM || process.env.SMTP_USER || 'noreply@example.com';
-    const bccEmail = process.env.EMAIL_BCC; // Optional BCC for order tracking
-
+    // Send email via SMTP
     console.log(
-      `[EmailService] Sending email via ${process.env.SMTP_HOST}:${process.env.SMTP_PORT}`,
+      `[EmailService] Sending email via SMTP ${process.env.SMTP_HOST}:${process.env.SMTP_PORT}`,
     );
     console.log(`[EmailService] From: ${fromEmail}, To: ${to}, BCC: ${bccEmail || 'none'}`);
     console.log(`[EmailService] About to call sendMail()...`);
