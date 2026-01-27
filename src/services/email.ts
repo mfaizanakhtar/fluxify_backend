@@ -46,6 +46,9 @@ function getTransporter(): Transporter | null {
       user,
       pass,
     },
+    connectionTimeout: 30000, // 30 seconds
+    greetingTimeout: 30000,
+    socketTimeout: 60000,
   });
 }
 
