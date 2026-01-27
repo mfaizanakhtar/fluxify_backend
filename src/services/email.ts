@@ -336,7 +336,9 @@ export async function sendDeliveryEmail(
 
   try {
     // Generate QR code
-    console.log(`[EmailService] Generating QR code for LPA: ${esimPayload.lpa.substring(0, 20)}...`);
+    console.log(
+      `[EmailService] Generating QR code for LPA: ${esimPayload.lpa.substring(0, 20)}...`,
+    );
     const qrBuffer = await generateQRCodeBuffer(esimPayload.lpa);
     console.log(`[EmailService] QR code generated, size: ${qrBuffer.length} bytes`);
 
@@ -365,7 +367,9 @@ export async function sendDeliveryEmail(
     const fromEmail = process.env.EMAIL_FROM || process.env.SMTP_USER || 'noreply@example.com';
     const bccEmail = process.env.EMAIL_BCC; // Optional BCC for order tracking
 
-    console.log(`[EmailService] Sending email via ${process.env.SMTP_HOST}:${process.env.SMTP_PORT}`);
+    console.log(
+      `[EmailService] Sending email via ${process.env.SMTP_HOST}:${process.env.SMTP_PORT}`,
+    );
     console.log(`[EmailService] From: ${fromEmail}, To: ${to}, BCC: ${bccEmail || 'none'}`);
 
     const info = await transporter.sendMail({
