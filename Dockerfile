@@ -16,11 +16,12 @@ RUN npm ci
 
 # Copy source code
 COPY src ./src
+COPY scripts ./scripts
 
 # Generate Prisma client
 RUN npx prisma generate
 
-# Build TypeScript
+# Build TypeScript (compiles src/ and scripts/)
 RUN npm run build
 
 # Stage 2: Production
@@ -45,9 +46,6 @@ RUN npx prisma generate
 # Copy built application from builder
 COPY --from=builder /app/dist ./dist
 
-# Copy initialization script
-COPY scripts ./scripts
-
 # Create non-root user
 RUN addgroup -g 1001 -S nodejs && \
     adduser -S nodejs -u 1001
@@ -63,4 +61,4 @@ EXPOSE 3000
 # Run initialization script (migrations + seeding), then start app
 # For API: init runs before server starts
 # For Worker: init runs (idempotent) before worker starts
-CMD ["sh", "-c", "npx ts-node scripts/init-railway.ts && node dist/index.js"]
+CMD ["sh", "-c", "node dist/scripts/init-railway.js && node dist/index.js"]
