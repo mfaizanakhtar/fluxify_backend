@@ -45,6 +45,9 @@ RUN npx prisma generate
 # Copy built application from builder
 COPY --from=builder /app/dist ./dist
 
+# Copy initialization script
+COPY scripts ./scripts
+
 # Create non-root user
 RUN addgroup -g 1001 -S nodejs && \
     adduser -S nodejs -u 1001
@@ -57,7 +60,7 @@ USER nodejs
 # Expose port (API only, but doesn't hurt for worker)
 EXPOSE 3000
 
-# Run migrations on container start, then start app
-# For API: migrations run before server starts
-# For Worker: migrations run (idempotent) before worker starts
-CMD ["sh", "-c", "npx prisma migrate deploy && node dist/index.js"]
+# Run initialization script (migrations + seeding), then start app
+# For API: init runs before server starts
+# For Worker: init runs (idempotent) before worker starts
+CMD ["sh", "-c", "npx ts-node scripts/init-railway.ts && node dist/index.js"]

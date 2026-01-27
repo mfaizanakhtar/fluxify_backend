@@ -16,6 +16,7 @@
     "fetch:skus": "ts-node scripts/fetch-firoam-skus.ts",
     "find:priceid": "ts-node scripts/find-package-priceid.ts",
     "db:seed": "ts-node prisma/seed-sku-mappings.ts",
+    "init:railway": "ts-node scripts/init-railway.ts",
     "generate:skus": "ts-node scripts/generate-shopify-skus.ts",
     "match:firoam": "ts-node scripts/match-firoam-packages.ts",
     "generate:seed": "ts-node scripts/generate-seed-script.ts",
