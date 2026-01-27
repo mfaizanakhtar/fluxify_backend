@@ -2,7 +2,7 @@
  * Auto-generated seed script for all Shopify → FiRoam SKU mappings
  * Generated: 2026-01-25T03:20:18.360Z
  * Total Mappings: 7356
- * 
+ *
  * Usage: npm run seed:all-mappings
  */
 import { PrismaClient } from '@prisma/client';
