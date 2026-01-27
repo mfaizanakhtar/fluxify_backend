@@ -9,3 +9,6 @@ prisma/dev.db
 firoam-data/*
 csv-exports/*
 test-output/*
+
+# Docker
+docker-compose.override.yml
