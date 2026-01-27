@@ -8,7 +8,7 @@ async function updateWebhook(webhookId: string, newUrl: string) {
   console.log(`New URL: ${newUrl}/webhook/orders/paid`);
 
   const mutation = `
-    mutation webhookSubscriptionUpdate($id: ID!, $callbackUrl: String!) {
+    mutation webhookSubscriptionUpdate($id: ID!, $callbackUrl: URL!) {
       webhookSubscriptionUpdate(
         id: $id
         webhookSubscription: {
@@ -39,7 +39,19 @@ async function updateWebhook(webhookId: string, newUrl: string) {
       callbackUrl: `${newUrl}/webhook/orders/paid`,
     });
 
+    console.log('Full response:', JSON.stringify(response, null, 2));
+
+    if (!response.data) {
+      console.error('❌ No data in response');
+      return;
+    }
+
     const result = response.data.webhookSubscriptionUpdate;
+
+    if (!result) {
+      console.error('❌ No webhookSubscriptionUpdate in response');
+      return;
+    }
 
     if (result.userErrors.length > 0) {
       console.error('❌ Errors:', result.userErrors);
