@@ -132,7 +132,7 @@ async function generateEsimPDF(data: DeliveryEmailData): Promise<string> {
         .font('Helvetica-Bold')
         .fillColor('#667eea')
         .text('iPhone Quick Install:', 50, yPos);
-      yPos += 18;
+      yPos += 15;
 
       const iphoneInstallUrl = `https://esimsetup.apple.com/esim_qrcode_provisioning?carddata=${encodeURIComponent(esimPayload.lpa)}`;
 
@@ -151,43 +151,38 @@ async function generateEsimPDF(data: DeliveryEmailData): Promise<string> {
         underline: false,
       });
 
-      yPos += 45;
+      yPos += 40;
 
       doc
-        .fontSize(9)
+        .fontSize(8)
         .font('Helvetica')
         .fillColor('#666666')
-        .text(
-          '(This button will open directly in your iPhone settings when clicked on your iPhone)',
-          50,
-          yPos,
-          {
-            width: 500,
-          },
-        );
-      yPos += 35;
+        .text('(Opens directly in iPhone settings when clicked)', 50, yPos, {
+          width: 500,
+        });
+      yPos += 25;
 
       // QR Code section
       doc
         .fontSize(16)
         .font('Helvetica-Bold')
-        .fillColor('rgba(102, 126, 234, 1)')
+        .fillColor('#667eea')
         .text('Scan to Install', 50, yPos);
-      yPos += 30;
+      yPos += 25;
 
       // Add QR code image
-      doc.image(qrCodeBuffer, 50, yPos, { width: 250, height: 250 });
-      yPos += 270;
+      doc.image(qrCodeBuffer, 50, yPos, { width: 220, height: 220 });
+      yPos += 235;
 
       doc
-        .fontSize(10)
+        .fontSize(9)
         .font('Helvetica')
         .fillColor('#666666')
-        .text('Scan this QR code with your phone camera or in Settings → Add eSIM', 50, yPos, {
+        .text('Scan this QR code in Settings → Add eSIM', 50, yPos, {
           width: 500,
           align: 'center',
         });
-      yPos += 40;
+      yPos += 30;
 
       // Manual Installation Details
       doc
@@ -195,41 +190,41 @@ async function generateEsimPDF(data: DeliveryEmailData): Promise<string> {
         .font('Helvetica-Bold')
         .fillColor('#333333')
         .text('Manual Installation', 50, yPos);
-      yPos += 25;
+      yPos += 20;
 
       doc.fontSize(10).font('Helvetica-Bold').text('SM-DP+ Address:', 50, yPos);
-      yPos += 15;
+      yPos += 13;
       doc
         .fontSize(9)
         .font('Courier')
         .fillColor('#2d3748')
         .text(smdpAddress, 50, yPos, { width: 500 });
-      yPos += 25;
+      yPos += 20;
 
       doc
         .fontSize(10)
         .font('Helvetica-Bold')
         .fillColor('#333333')
         .text('Activation Code:', 50, yPos);
-      yPos += 15;
+      yPos += 13;
       doc
         .fontSize(9)
         .font('Courier')
         .fillColor('#2d3748')
         .text(esimPayload.activationCode, 50, yPos, { width: 500 });
-      yPos += 25;
+      yPos += 20;
 
       doc.fontSize(10).font('Helvetica-Bold').fillColor('#333333').text('ICCID:', 50, yPos);
-      yPos += 15;
+      yPos += 13;
       doc
         .fontSize(9)
         .font('Courier')
         .fillColor('#2d3748')
         .text(esimPayload.iccid, 50, yPos, { width: 500 });
-      yPos += 35;
+      yPos += 25;
 
       // Add new page for instructions if needed
-      if (yPos > 650) {
+      if (yPos > 720) {
         doc.addPage();
         yPos = 50;
       }
@@ -240,7 +235,7 @@ async function generateEsimPDF(data: DeliveryEmailData): Promise<string> {
         .font('Helvetica-Bold')
         .fillColor('#333333')
         .text('Installation Instructions', 50, yPos);
-      yPos += 25;
+      yPos += 20;
 
       // iPhone
       doc
@@ -248,7 +243,7 @@ async function generateEsimPDF(data: DeliveryEmailData): Promise<string> {
         .font('Helvetica-Bold')
         .fillColor('#667eea')
         .text('iPhone (iOS 12.1+)', 50, yPos);
-      yPos += 20;
+      yPos += 18;
       doc.fontSize(10).font('Helvetica').fillColor('#333333');
 
       const iPhoneSteps = [
@@ -261,14 +256,14 @@ async function generateEsimPDF(data: DeliveryEmailData): Promise<string> {
 
       iPhoneSteps.forEach((step) => {
         doc.text(step, 70, yPos);
-        yPos += 18;
+        yPos += 16;
       });
 
-      yPos += 15;
+      yPos += 12;
 
       // Android
       doc.fontSize(12).font('Helvetica-Bold').fillColor('#667eea').text('Android', 50, yPos);
-      yPos += 20;
+      yPos += 18;
       doc.fontSize(10).font('Helvetica').fillColor('#333333');
 
       const androidSteps = [
@@ -281,10 +276,10 @@ async function generateEsimPDF(data: DeliveryEmailData): Promise<string> {
 
       androidSteps.forEach((step) => {
         doc.text(step, 70, yPos);
-        yPos += 18;
+        yPos += 16;
       });
 
-      yPos += 20;
+      yPos += 15;
 
       // Important Notes
       doc
@@ -292,7 +287,7 @@ async function generateEsimPDF(data: DeliveryEmailData): Promise<string> {
         .font('Helvetica-Bold')
         .fillColor('#c53030')
         .text('IMPORTANT NOTES', 50, yPos);
-      yPos += 20;
+      yPos += 18;
       doc.fontSize(9).font('Helvetica').fillColor('#333333');
 
       const notes = [
@@ -305,7 +300,7 @@ async function generateEsimPDF(data: DeliveryEmailData): Promise<string> {
 
       notes.forEach((note) => {
         doc.text(note, 70, yPos);
-        yPos += 15;
+        yPos += 14;
       });
 
       // Footer
