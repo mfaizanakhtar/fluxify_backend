@@ -9,7 +9,7 @@ async function registerHttpWebhook(webhookUrl: string) {
   console.log('📝 Registering HTTP webhook subscription...');
 
   const mutation = `
-    mutation webhookSubscriptionCreate($topic: WebhookSubscriptionTopic!, $callbackUrl: String!) {
+    mutation webhookSubscriptionCreate($topic: WebhookSubscriptionTopic!, $callbackUrl: URL!) {
       webhookSubscriptionCreate(
         topic: $topic
         webhookSubscription: {
