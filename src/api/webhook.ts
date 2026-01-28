@@ -9,12 +9,16 @@ interface ShopifyOrderPaidWebhook {
   id: number;
   name: string;
   email: string;
+  contact_email?: string;
   customer?: {
     id: number;
     email: string;
     first_name: string;
     last_name: string;
     phone?: string;
+  };
+  billing_address?: {
+    email?: string;
   };
   line_items: Array<{
     id: number;
@@ -78,20 +82,24 @@ export default function webhookRoutes(
         const webhook: ShopifyOrderPaidWebhook = JSON.parse(rawBody);
         const orderId = webhook.id.toString();
         const orderName = webhook.name;
-        
+
         // Debug: Log email fields
-        app.log.info(`[Webhook] Order ${orderName} - webhook.email: ${webhook.email}, customer?.email: ${webhook.customer?.email}`);
-        
+        app.log.info(
+          `[Webhook] Order ${orderName} - webhook.email: ${webhook.email}, customer?.email: ${webhook.customer?.email}`,
+        );
+
         // Use customer email if available, fallback to order email
         const customerEmail = webhook.customer?.email || webhook.email;
 
         if (!customerEmail) {
-          app.log.error(`[Webhook] No email found for order ${orderName}. Webhook payload: ${JSON.stringify({ 
-            email: webhook.email, 
-            customer: webhook.customer,
-            contact_email: (webhook as any).contact_email,
-            billing_address: (webhook as any).billing_address?.email
-          })}`);
+          app.log.error(
+            `[Webhook] No email found for order ${orderName}. Webhook payload: ${JSON.stringify({
+              email: webhook.email,
+              customer: webhook.customer,
+              contact_email: webhook.contact_email,
+              billing_address: webhook.billing_address?.email,
+            })}`,
+          );
           return reply.code(400).send({ error: 'No customer email' });
         }
 

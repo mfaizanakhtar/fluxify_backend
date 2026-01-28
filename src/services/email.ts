@@ -70,9 +70,9 @@ function buildEmailHtml(data: DeliveryEmailData, qrCodeDataUrl: string): string 
   <style>
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f5f5f5; }
     .container { max-width: 600px; margin: 0 auto; background: white; }
-    .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; }
-    .header h1 { margin: 0; font-size: 28px; }
-    .content { padding: 30px; }
+    .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; text-align: center; }
+    .header h1 { margin: 0; font-size: 24px; }
+    .content { padding: 20px 30px; }
     .qr-section { text-align: center; background: #f8f9fa; padding: 30px; border-radius: 12px; margin: 20px 0; }
     .qr-code { max-width: 250px; margin: 20px auto; }
     .qr-code img { width: 100%; height: auto; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
