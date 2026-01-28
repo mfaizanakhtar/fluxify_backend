@@ -19,7 +19,11 @@ This backend integrates with Shopify to automatically provision and deliver eSIM
 1. **Shopify Dev Dashboard App**
    - Go to https://dev.shopify.com/dashboard/
    - Create new app
-   - Configure scopes: `read_orders`, `read_fulfillments`, `write_fulfillments`, `read_product_listings`
+   - Configure scopes (Admin API access scopes):
+     - `read_orders` - Read order details
+     - `read_products` - Read product/variant metafields
+     - `read_merchant_managed_fulfillment_orders` - Read fulfillment orders
+     - `write_merchant_managed_fulfillment_orders` - Create fulfillments
    - Install to your store
    - Get Client ID and Client Secret from Settings page
 
