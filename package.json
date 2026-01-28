@@ -41,11 +41,13 @@
   "dependencies": {
     "@prisma/client": "^5.0.0",
     "@types/crypto-js": "^4.2.2",
+    "@types/pdfkit": "^0.17.4",
     "@types/qrcode": "^1.5.6",
     "axios": "^1.5.0",
     "crypto-js": "^4.2.0",
     "dotenv": "^16.0.0",
     "fastify": "^4.22.0",
+    "pdfkit": "^0.17.2",
     "pg": "^8.11.0",
     "pg-boss": "^8.0.0",
     "prisma": "^5.0.0",
