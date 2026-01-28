@@ -1,6 +1,7 @@
 import prisma from '../../db/prisma';
 import FiRoamClient from '../../vendor/firoamClient';
 import { sendDeliveryEmail, recordDeliveryAttempt, type EsimPayload } from '../../services/email';
+import { getShopifyClient } from '../../shopify/client';
 
 const fiRoam = new FiRoamClient();
 
@@ -259,7 +260,31 @@ export async function handleProvision(jobData: Record<string, unknown>) {
       console.warn(`[ProvisionJob] No customer email - skipping delivery email`);
     }
 
-    // TODO: Create Shopify fulfillment
+    // Create Shopify fulfillment
+    if (data.orderId && data.lineItemId) {
+      try {
+        console.log(
+          `[ProvisionJob] Creating Shopify fulfillment for order ${data.orderId}, line item ${data.lineItemId}`,
+        );
+
+        const shopify = getShopifyClient();
+        await shopify.createFulfillment(data.orderId, [
+          {
+            id: data.lineItemId,
+            quantity: 1,
+          },
+        ]);
+
+        console.log(`[ProvisionJob] Shopify fulfillment created successfully`);
+      } catch (fulfillmentError) {
+        const fulfillmentMsg =
+          fulfillmentError instanceof Error ? fulfillmentError.message : String(fulfillmentError);
+        console.error(`[ProvisionJob] Failed to create Shopify fulfillment: ${fulfillmentMsg}`);
+        // Don't throw - eSIM is delivered, fulfillment failure is recoverable
+      }
+    } else {
+      console.warn(`[ProvisionJob] Missing orderId or lineItemId - skipping Shopify fulfillment`);
+    }
 
     return { ok: true };
   } catch (err: unknown) {
