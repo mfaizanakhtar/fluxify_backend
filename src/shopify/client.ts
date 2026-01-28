@@ -160,11 +160,12 @@ export class ShopifyClient {
     const queryFulfillmentOrders = `
       query getFulfillmentOrders($id: ID!) {
         order(id: $id) {
-          fulfillmentOrders(first: 1, query: "status:open") {
+          fulfillmentOrders(first: 10) {
             edges {
               node {
                 id
                 status
+                requestStatus
               }
             }
           }
@@ -191,10 +192,27 @@ export class ShopifyClient {
     const fulfillmentOrders = queryResponse.data?.data?.order?.fulfillmentOrders?.edges || [];
 
     if (fulfillmentOrders.length === 0) {
-      throw new Error('No open fulfillment orders found for this order');
+      throw new Error('No fulfillment orders found for this order');
     }
 
-    const fulfillmentOrderId = fulfillmentOrders[0].node.id;
+    // Find a fulfillable order (status: OPEN, SCHEDULED, or IN_PROGRESS)
+    const fulfillableStatuses = ['OPEN', 'SCHEDULED', 'IN_PROGRESS'];
+    const fulfillableOrder = fulfillmentOrders.find((edge: { node: { status: string } }) =>
+      fulfillableStatuses.includes(edge.node.status),
+    );
+
+    if (!fulfillableOrder) {
+      const statuses = fulfillmentOrders.map((e: { node: { status: string } }) => e.node.status);
+      throw new Error(
+        `No fulfillable orders found. Order statuses: ${statuses.join(', ')}. Order may already be fulfilled.`,
+      );
+    }
+
+    const fulfillmentOrderId = fulfillableOrder.node.id;
+
+    console.log(
+      `[Shopify] Creating fulfillment for order ${orderId}, fulfillment order: ${fulfillmentOrderId}`,
+    );
 
     // Step 2: Create the fulfillment (fulfills all items in the fulfillment order)
     const mutation = `
