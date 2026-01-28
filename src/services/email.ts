@@ -84,9 +84,6 @@ function buildEmailHtml(data: DeliveryEmailData, qrCodeDataUrl: string): string 
     .detail-value { color: #2d3748; font-family: monospace; word-break: break-all; }
     .instructions { margin: 30px 0; }
     .instructions h2 { color: #2c5282; border-bottom: 2px solid #667eea; padding-bottom: 10px; }
-    .step { display: flex; margin: 15px 0; align-items: flex-start; }
-    .step-number { background: #667eea; color: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 15px; flex-shrink: 0; }
-    .step-content { flex: 1; }
     .platform { background: #f7fafc; padding: 20px; border-radius: 8px; margin: 15px 0; border-left: 4px solid #667eea; }
     .platform h4 { margin: 0 0 10px 0; color: #4a5568; }
     .manual-codes { background: #fff3cd; padding: 20px; border-radius: 8px; margin: 20px 0; border: 1px solid #ffc107; }
@@ -101,7 +98,7 @@ function buildEmailHtml(data: DeliveryEmailData, qrCodeDataUrl: string): string 
 <body>
   <div class="container">
     <div class="header">
-      <h1>🎉 Your eSIM is Ready!</h1>
+      <h1>Your eSIM is Ready!</h1>
       <p>Order ${orderNumber}</p>
     </div>
     
@@ -113,9 +110,11 @@ function buildEmailHtml(data: DeliveryEmailData, qrCodeDataUrl: string): string 
           ? `
       <div class="details-box">
         <h3>📱 eSIM Details</h3>
-        ${region ? `<div class="detail-row"><span class="detail-label">Region</span><span class="detail-value">${region}</span></div>` : ''}
-        ${dataAmount ? `<div class="detail-row"><span class="detail-label">Data</span><span class="detail-value">${dataAmount}</span></div>` : ''}
-        ${validity ? `<div class="detail-row"><span class="detail-label">Validity</span><span class="detail-value">${validity}</span></div>` : ''}
+        <table border="0" cellpadding="0" cellspacing="0" width="100%">
+          ${region ? `<tr><td style="font-weight: 600; color: #4a5568; padding: 8px 0; border-bottom: 1px solid #d1e3ed;">Region</td><td style="color: #2d3748; padding: 8px 0; border-bottom: 1px solid #d1e3ed; text-align: right;">${region}</td></tr>` : ''}
+          ${dataAmount ? `<tr><td style="font-weight: 600; color: #4a5568; padding: 8px 0; border-bottom: 1px solid #d1e3ed;">Data</td><td style="color: #2d3748; padding: 8px 0; border-bottom: 1px solid #d1e3ed; text-align: right;">${dataAmount}</td></tr>` : ''}
+          ${validity ? `<tr><td style="font-weight: 600; color: #4a5568; padding: 8px 0;">Validity</td><td style="color: #2d3748; padding: 8px 0; text-align: right;">${validity}</td></tr>` : ''}
+        </table>
       </div>
       `
           : ''
@@ -152,67 +151,73 @@ function buildEmailHtml(data: DeliveryEmailData, qrCodeDataUrl: string): string 
         
         <div class="platform">
           <h4>🍎 iPhone (iOS 17.4+)</h4>
-          <div class="step">
-            <span class="step-number">1</span>
-            <span class="step-content">Make sure you're connected to <strong>WiFi</strong></span>
-          </div>
-          <div class="step">
-            <span class="step-number">2</span>
-            <span class="step-content">Tap the <strong>"Install eSIM Now"</strong> button above (easiest method)</span>
-          </div>
-          <div class="step">
-            <span class="step-number">3</span>
-            <span class="step-content"><em>OR</em> Go to <strong>Settings → Cellular → Add eSIM</strong> and scan the QR code</span>
-          </div>
-          <div class="step">
-            <span class="step-number">4</span>
-            <span class="step-content">After installation, keep the eSIM <strong>turned off</strong> until you arrive at your destination</span>
-          </div>
+          <table border="0" cellpadding="0" cellspacing="0" width="100%">
+            <tr>
+              <td width="40" valign="top" style="padding: 8px 0;"><div style="background: #667eea; color: white; width: 24px; height: 24px; border-radius: 50%; text-align: center; line-height: 24px; font-weight: bold; font-size: 14px;">1</div></td>
+              <td valign="top" style="padding: 8px 0;">Make sure you're connected to <strong>WiFi</strong></td>
+            </tr>
+            <tr>
+              <td width="40" valign="top" style="padding: 8px 0;"><div style="background: #667eea; color: white; width: 24px; height: 24px; border-radius: 50%; text-align: center; line-height: 24px; font-weight: bold; font-size: 14px;">2</div></td>
+              <td valign="top" style="padding: 8px 0;">Tap the <strong>"Install on iPhone"</strong> button above (easiest method)</td>
+            </tr>
+            <tr>
+              <td width="40" valign="top" style="padding: 8px 0;"><div style="background: #667eea; color: white; width: 24px; height: 24px; border-radius: 50%; text-align: center; line-height: 24px; font-weight: bold; font-size: 14px;">3</div></td>
+              <td valign="top" style="padding: 8px 0;"><em>OR</em> Go to <strong>Settings → Cellular → Add eSIM</strong> and scan the QR code</td>
+            </tr>
+            <tr>
+              <td width="40" valign="top" style="padding: 8px 0;"><div style="background: #667eea; color: white; width: 24px; height: 24px; border-radius: 50%; text-align: center; line-height: 24px; font-weight: bold; font-size: 14px;">4</div></td>
+              <td valign="top" style="padding: 8px 0;">After installation, keep the eSIM <strong>turned off</strong> until you arrive at your destination</td>
+            </tr>
+          </table>
         </div>
 
         <div class="platform">
           <h4>🤖 Android</h4>
-          <div class="step">
-            <span class="step-number">1</span>
-            <span class="step-content">Make sure you're connected to <strong>WiFi</strong></span>
-          </div>
-          <div class="step">
-            <span class="step-number">2</span>
-            <span class="step-content">Go to <strong>Settings → Network & Internet → SIMs</strong></span>
-          </div>
-          <div class="step">
-            <span class="step-number">3</span>
-            <span class="step-content">Tap <strong>Add eSIM</strong> or <strong>Download a SIM instead?</strong></span>
-          </div>
-          <div class="step">
-            <span class="step-number">4</span>
-            <span class="step-content">Choose <strong>Scan QR code</strong> and scan the code above</span>
-          </div>
-          <div class="step">
-            <span class="step-number">5</span>
-            <span class="step-content">After installation, keep the eSIM <strong>turned off</strong> until you arrive</span>
-          </div>
+          <table border="0" cellpadding="0" cellspacing="0" width="100%">
+            <tr>
+              <td width="40" valign="top" style="padding: 8px 0;"><div style="background: #667eea; color: white; width: 24px; height: 24px; border-radius: 50%; text-align: center; line-height: 24px; font-weight: bold; font-size: 14px;">1</div></td>
+              <td valign="top" style="padding: 8px 0;">Make sure you're connected to <strong>WiFi</strong></td>
+            </tr>
+            <tr>
+              <td width="40" valign="top" style="padding: 8px 0;"><div style="background: #667eea; color: white; width: 24px; height: 24px; border-radius: 50%; text-align: center; line-height: 24px; font-weight: bold; font-size: 14px;">2</div></td>
+              <td valign="top" style="padding: 8px 0;">Go to <strong>Settings → Network & Internet → SIMs</strong></td>
+            </tr>
+            <tr>
+              <td width="40" valign="top" style="padding: 8px 0;"><div style="background: #667eea; color: white; width: 24px; height: 24px; border-radius: 50%; text-align: center; line-height: 24px; font-weight: bold; font-size: 14px;">3</div></td>
+              <td valign="top" style="padding: 8px 0;">Tap <strong>Add eSIM</strong> or <strong>Download a SIM instead?</strong></td>
+            </tr>
+            <tr>
+              <td width="40" valign="top" style="padding: 8px 0;"><div style="background: #667eea; color: white; width: 24px; height: 24px; border-radius: 50%; text-align: center; line-height: 24px; font-weight: bold; font-size: 14px;">4</div></td>
+              <td valign="top" style="padding: 8px 0;">Choose <strong>Scan QR code</strong> and scan the code above</td>
+            </tr>
+            <tr>
+              <td width="40" valign="top" style="padding: 8px 0;"><div style="background: #667eea; color: white; width: 24px; height: 24px; border-radius: 50%; text-align: center; line-height: 24px; font-weight: bold; font-size: 14px;">5</div></td>
+              <td valign="top" style="padding: 8px 0;">After installation, keep the eSIM <strong>turned off</strong> until you arrive</td>
+            </tr>
+          </table>
         </div>
       </div>
       
       <div class="platform" style="background: #fffbeb; border-left-color: #f59e0b; margin-top: 20px;">
         <h4 style="color: #92400e;">🔌 How to Activate</h4>
-        <div class="step">
-          <span class="step-number">1</span>
-          <span class="step-content">When you arrive at your destination, go to <strong>Settings → Cellular/Mobile</strong></span>
-        </div>
-        <div class="step">
-          <span class="step-number">2</span>
-          <span class="step-content">Select your eSIM and <strong>turn it on</strong></span>
-        </div>
-        <div class="step">
-          <span class="step-number">3</span>
-          <span class="step-content">Enable <strong>Data Roaming</strong> for the eSIM</span>
-        </div>
-        <div class="step">
-          <span class="step-number">4</span>
-          <span class="step-content">If no connection appears, toggle <strong>Airplane Mode</strong> on/off or restart your phone</span>
-        </div>
+        <table border="0" cellpadding="0" cellspacing="0" width="100%">
+          <tr>
+            <td width="40" valign="top" style="padding: 8px 0;"><div style="background: #f59e0b; color: white; width: 24px; height: 24px; border-radius: 50%; text-align: center; line-height: 24px; font-weight: bold; font-size: 14px;">1</div></td>
+            <td valign="top" style="padding: 8px 0;">When you arrive at your destination, go to <strong>Settings → Cellular/Mobile</strong></td>
+          </tr>
+          <tr>
+            <td width="40" valign="top" style="padding: 8px 0;"><div style="background: #f59e0b; color: white; width: 24px; height: 24px; border-radius: 50%; text-align: center; line-height: 24px; font-weight: bold; font-size: 14px;">2</div></td>
+            <td valign="top" style="padding: 8px 0;">Select your eSIM and <strong>turn it on</strong></td>
+          </tr>
+          <tr>
+            <td width="40" valign="top" style="padding: 8px 0;"><div style="background: #f59e0b; color: white; width: 24px; height: 24px; border-radius: 50%; text-align: center; line-height: 24px; font-weight: bold; font-size: 14px;">3</div></td>
+            <td valign="top" style="padding: 8px 0;">Enable <strong>Data Roaming</strong> for the eSIM</td>
+          </tr>
+          <tr>
+            <td width="40" valign="top" style="padding: 8px 0;"><div style="background: #f59e0b; color: white; width: 24px; height: 24px; border-radius: 50%; text-align: center; line-height: 24px; font-weight: bold; font-size: 14px;">4</div></td>
+            <td valign="top" style="padding: 8px 0;">If no connection appears, toggle <strong>Airplane Mode</strong> on/off or restart your phone</td>
+          </tr>
+        </table>
       </div>
 
       <div class="manual-codes">
