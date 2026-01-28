@@ -303,11 +303,13 @@ async function generateEsimPDF(data: DeliveryEmailData): Promise<string> {
         yPos += 14;
       });
 
+      yPos += 10;
+
       // Footer
       doc
         .fontSize(8)
         .fillColor('#666666')
-        .text(`Generated: ${new Date().toLocaleString()}`, 50, doc.page.height - 50, {
+        .text(`Generated: ${new Date().toLocaleString()}`, 50, yPos, {
           align: 'center',
         });
 
