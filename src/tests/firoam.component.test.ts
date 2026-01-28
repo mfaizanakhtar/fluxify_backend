@@ -58,7 +58,7 @@ describe('FiRoamClient component test (mocked by default)', () => {
     // Verify the raw response
     expect(result.raw).toBeDefined();
     expect(result.raw.code).toBe(0);
-    expect(result.raw.data.orderNum).toBe('EP-MOCK-1');
+    expect((result.raw.data as Record<string, unknown>).orderNum).toBe('EP-MOCK-1');
 
     // Verify the canonical payload
     expect(result.canonical).toBeDefined();

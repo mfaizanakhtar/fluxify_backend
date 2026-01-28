@@ -143,7 +143,7 @@ describe('FiRoamClient - Complete Order Flow', () => {
 
     expect(orderResult.raw).toBeDefined();
     expect(orderResult.raw.code).toBe(0);
-    expect(orderResult.raw.data.orderNum).toBe('EP-MOCK-ORDER-123');
+    expect((orderResult.raw.data as Record<string, unknown>).orderNum).toBe('EP-MOCK-ORDER-123');
 
     // Canonical payload should be populated from getOrderInfo
     // (May not work if getOrderInfo mock fails or encryption key missing)

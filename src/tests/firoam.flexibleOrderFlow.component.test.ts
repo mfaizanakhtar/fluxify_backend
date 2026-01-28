@@ -70,11 +70,14 @@ describe('FiRoamClient - Flexible Order Flow', () => {
 
     // Check raw response
     expect(result.raw.code).toBe(0);
-    expect(result.raw.data.orderNum).toBe('ORD-12345-ONE');
-    expect(result.raw.data.cardApiDtoList).toHaveLength(1);
-    expect(result.raw.data.cardApiDtoList[0].sm_dp_address).toBe('LPA$1$smdp.example.com$ABC123');
-    expect(result.raw.data.cardApiDtoList[0].activationCode).toBe('ACT-CODE-123');
-    expect(result.raw.data.cardApiDtoList[0].iccid).toBe('8901234567890123456');
+    const rawData = result.raw.data as Record<string, unknown>;
+    expect(rawData.orderNum).toBe('ORD-12345-ONE');
+    expect(Array.isArray(rawData.cardApiDtoList)).toBe(true);
+    expect((rawData.cardApiDtoList as unknown[]).length).toBe(1);
+    const firstCard = (rawData.cardApiDtoList as unknown[])[0] as Record<string, unknown>;
+    expect(firstCard.sm_dp_address).toBe('LPA$1$smdp.example.com$ABC123');
+    expect(firstCard.activationCode).toBe('ACT-CODE-123');
+    expect(firstCard.iccid).toBe('8901234567890123456');
 
     // Canonical would be defined in production with working DB
     // In component test with mocked API, DB operations may fail
@@ -126,7 +129,7 @@ describe('FiRoamClient - Flexible Order Flow', () => {
 
     // Check raw response
     expect(result.raw.code).toBe(0);
-    expect(result.raw.data.orderNum).toBe('ORD-12345-TWO');
+    expect((result.raw.data as Record<string, unknown>).orderNum).toBe('ORD-12345-TWO');
 
     // In two-step flow, getOrderInfo should have been called
     // Verify both calls were made (constructor login is automatic, getOrderInfo is second call)
@@ -156,9 +159,12 @@ describe('FiRoamClient - Flexible Order Flow', () => {
     const result = await client.getOrderInfo('ORD-MANUAL-123');
 
     expect(result.code).toBe(0);
-    expect(result.data.orderNum).toBe('ORD-MANUAL-123');
-    expect(result.data.cardApiDtoList).toHaveLength(1);
-    expect(result.data.cardApiDtoList[0].sm_dp_address).toBe('LPA$1$smdp.example.com$MANUAL');
+    const resultData = result.data as Record<string, unknown>;
+    expect(resultData.orderNum).toBe('ORD-MANUAL-123');
+    expect(Array.isArray(resultData.cardApiDtoList)).toBe(true);
+    expect((resultData.cardApiDtoList as unknown[]).length).toBe(1);
+    const firstCard = (resultData.cardApiDtoList as unknown[])[0] as Record<string, unknown>;
+    expect(firstCard.sm_dp_address).toBe('LPA$1$smdp.example.com$MANUAL');
   });
 
   it('should handle one-step flow with legacy string response format', async () => {

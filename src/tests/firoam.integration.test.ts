@@ -318,7 +318,7 @@ async function cancelOrder(
   });
   return {
     success: result.success,
-    message: result.message,
+    message: ((result as Record<string, unknown>).message as string | undefined) || '',
   };
 }
 
@@ -659,10 +659,11 @@ describe('FiRoam API - Live Integration Tests', () => {
       const orderInfo = await orderClient.getOrderInfo(orderNum!);
 
       expect(orderInfo.data).toBeDefined();
-      expect(orderInfo.data.cardApiDtoList).toBeDefined();
-      expect(orderInfo.data.cardApiDtoList.length).toBeGreaterThan(0);
+      const orderData = orderInfo.data as Record<string, unknown>;
+      expect(Array.isArray(orderData.cardApiDtoList)).toBe(true);
+      expect((orderData.cardApiDtoList as unknown[]).length).toBeGreaterThan(0);
 
-      const card = orderInfo.data.cardApiDtoList[0];
+      const card = (orderData.cardApiDtoList as unknown[])[0] as OrderCard;
       const lpaString = extractLpaString(card);
       expect(lpaString).toBeDefined();
 

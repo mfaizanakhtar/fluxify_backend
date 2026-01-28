@@ -75,6 +75,7 @@ export default class FiRoamClient {
   private password?: string;
   private signKey: string;
   private token?: string;
+  private tokenExpiry?: number;
   private http: AxiosInstance;
 
   constructor() {
@@ -86,7 +87,14 @@ export default class FiRoamClient {
   }
 
   private async loginIfNeeded() {
-    if (this.token) return this.token;
+    // Check if token exists and hasn't expired (with 5 minute buffer)
+    const now = Date.now();
+    if (this.token && this.tokenExpiry && this.tokenExpiry > now + 5 * 60 * 1000) {
+      return this.token;
+    }
+
+    // Token expired or doesn't exist - login again
+    console.log('[FiRoamClient] Token expired or missing, logging in...');
     if (!this.phone || !this.password) throw new Error('FIROAM_PHONE/FIROAM_PASSWORD not set');
     const payload = { phonenumber: this.phone, password: this.password } as Record<string, unknown>;
     payload['sign'] = createSign(payload, this.signKey);
@@ -96,10 +104,20 @@ export default class FiRoamClient {
     if (!data || !data.data || !data.data.token)
       throw new Error(`FiRoam login failed: ${JSON.stringify(data)}`);
     this.token = data.data.token;
+    // Set expiry to 1 hour from now (adjust based on FiRoam's actual token lifetime)
+    this.tokenExpiry = Date.now() + 60 * 60 * 1000;
+    console.log(
+      '[FiRoamClient] Successfully logged in, token valid until:',
+      new Date(this.tokenExpiry),
+    );
     return this.token;
   }
 
-  private async post(path: string, params: Record<string, unknown>) {
+  private async post(
+    path: string,
+    params: Record<string, unknown>,
+    retryOnExpire = true,
+  ): Promise<Record<string, unknown>> {
     await this.loginIfNeeded();
     const body: Record<string, unknown> = { ...params, token: this.token };
     body['sign'] = createSign(body, this.signKey);
@@ -107,7 +125,18 @@ export default class FiRoamClient {
     const resp = await this.http.post(path, new URLSearchParams(body as Record<string, string>), {
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     });
-    return resp.data;
+
+    const data = resp.data;
+
+    // If token expired, retry once with fresh token
+    if (retryOnExpire && data?.code === '-1' && data?.message === 'token expire') {
+      console.log('[FiRoamClient] Token expired during request, refreshing and retrying...');
+      this.token = undefined; // Force re-login
+      this.tokenExpiry = undefined;
+      return this.post(path, params, false); // Retry without further retries
+    }
+
+    return data;
   }
 
   /**
@@ -122,10 +151,10 @@ export default class FiRoamClient {
    */
   async addEsimOrder(orderPayload: unknown) {
     const payload: AddEsimOrderInput = validateAddEsimOrder(orderPayload);
-    
+
     // Debug: Log the exact payload being sent to FiRoam
     console.log('[FiRoamClient] Sending order payload:', JSON.stringify(payload, null, 2));
-    
+
     const data = await this.post('/api_esim/addEsimOrder', payload as Record<string, unknown>);
 
     if (!isSuccessResponse(data)) {
