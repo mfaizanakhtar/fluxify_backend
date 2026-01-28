@@ -91,7 +91,7 @@ async function generateEsimPDF(data: DeliveryEmailData): Promise<string> {
         .fillColor('#FFFFFF')
         .fontSize(28)
         .font('Helvetica-Bold')
-        .text('Your eSIM is Ready! 🎉', 50, 40, {
+        .text('Your eSIM is Ready!', 50, 40, {
           align: 'center',
         });
 
@@ -108,7 +108,7 @@ async function generateEsimPDF(data: DeliveryEmailData): Promise<string> {
 
       // eSIM Details box
       if (region || dataAmount || validity) {
-        doc.fontSize(14).font('Helvetica-Bold').text('📱 eSIM Details', 50, yPos);
+        doc.fontSize(14).font('Helvetica-Bold').text('eSIM Details', 50, yPos);
         yPos += 25;
 
         doc.fontSize(11).font('Helvetica');
@@ -126,12 +126,53 @@ async function generateEsimPDF(data: DeliveryEmailData): Promise<string> {
         }
       }
 
+      // iPhone Quick Install Button
+      doc
+        .fontSize(11)
+        .font('Helvetica-Bold')
+        .fillColor('#667eea')
+        .text('iPhone Quick Install:', 50, yPos);
+      yPos += 18;
+
+      const iphoneInstallUrl = `https://esimsetup.apple.com/esim_qrcode_provisioning?carddata=${encodeURIComponent(esimPayload.lpa)}`;
+
+      // Create a clickable button-like link
+      doc
+        .fontSize(12)
+        .font('Helvetica-Bold')
+        .fillColor('#FFFFFF')
+        .rect(50, yPos, 200, 35)
+        .fillAndStroke('#667eea', '#667eea');
+
+      doc.fillColor('#FFFFFF').text('Click to Install on iPhone', 50, yPos + 10, {
+        width: 200,
+        align: 'center',
+        link: iphoneInstallUrl,
+        underline: false,
+      });
+
+      yPos += 45;
+
+      doc
+        .fontSize(9)
+        .font('Helvetica')
+        .fillColor('#666666')
+        .text(
+          '(This button will open directly in your iPhone settings when clicked on your iPhone)',
+          50,
+          yPos,
+          {
+            width: 500,
+          },
+        );
+      yPos += 35;
+
       // QR Code section
       doc
         .fontSize(16)
         .font('Helvetica-Bold')
-        .fillColor('#667eea')
-        .text('📲 Scan to Install', 50, yPos);
+        .fillColor('rgba(102, 126, 234, 1)')
+        .text('Scan to Install', 50, yPos);
       yPos += 30;
 
       // Add QR code image
@@ -153,7 +194,7 @@ async function generateEsimPDF(data: DeliveryEmailData): Promise<string> {
         .fontSize(14)
         .font('Helvetica-Bold')
         .fillColor('#333333')
-        .text('⌨️ Manual Installation', 50, yPos);
+        .text('Manual Installation', 50, yPos);
       yPos += 25;
 
       doc.fontSize(10).font('Helvetica-Bold').text('SM-DP+ Address:', 50, yPos);
@@ -198,7 +239,7 @@ async function generateEsimPDF(data: DeliveryEmailData): Promise<string> {
         .fontSize(14)
         .font('Helvetica-Bold')
         .fillColor('#333333')
-        .text('📖 Installation Instructions', 50, yPos);
+        .text('Installation Instructions', 50, yPos);
       yPos += 25;
 
       // iPhone
@@ -206,7 +247,7 @@ async function generateEsimPDF(data: DeliveryEmailData): Promise<string> {
         .fontSize(12)
         .font('Helvetica-Bold')
         .fillColor('#667eea')
-        .text('🍎 iPhone (iOS 12.1+)', 50, yPos);
+        .text('iPhone (iOS 12.1+)', 50, yPos);
       yPos += 20;
       doc.fontSize(10).font('Helvetica').fillColor('#333333');
 
@@ -226,7 +267,7 @@ async function generateEsimPDF(data: DeliveryEmailData): Promise<string> {
       yPos += 15;
 
       // Android
-      doc.fontSize(12).font('Helvetica-Bold').fillColor('#667eea').text('🤖 Android', 50, yPos);
+      doc.fontSize(12).font('Helvetica-Bold').fillColor('#667eea').text('Android', 50, yPos);
       yPos += 20;
       doc.fontSize(10).font('Helvetica').fillColor('#333333');
 
@@ -250,7 +291,7 @@ async function generateEsimPDF(data: DeliveryEmailData): Promise<string> {
         .fontSize(12)
         .font('Helvetica-Bold')
         .fillColor('#c53030')
-        .text('⚠️ Important Notes', 50, yPos);
+        .text('IMPORTANT NOTES', 50, yPos);
       yPos += 20;
       doc.fontSize(9).font('Helvetica').fillColor('#333333');
 
