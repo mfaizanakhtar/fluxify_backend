@@ -35,9 +35,9 @@ function parseSmdpFromLpa(lpa: string): string {
 }
 
 /**
- * Generate QR code as base64 data URL for email embedding
+ * Generate QR code as base64 string for CID attachment
  */
-async function generateQRCodeDataURL(lpa: string): Promise<string> {
+async function generateQRCodeBase64(lpa: string): Promise<string> {
   const buffer = await QRCode.toBuffer(lpa, {
     errorCorrectionLevel: 'M',
     margin: 2,
@@ -48,13 +48,14 @@ async function generateQRCodeDataURL(lpa: string): Promise<string> {
     },
   });
 
-  return `data:image/png;base64,${buffer.toString('base64')}`;
+  return buffer.toString('base64');
 }
 
 /**
  * Build HTML email content for eSIM delivery
+ * Uses CID reference for QR code image (Gmail-compatible)
  */
-function buildEmailHtml(data: DeliveryEmailData, qrCodeDataUrl: string): string {
+function buildEmailHtml(data: DeliveryEmailData): string {
   const { orderNumber, productName, esimPayload, region, dataAmount, validity } = data;
 
   const smdpAddress = parseSmdpFromLpa(esimPayload.lpa);
@@ -139,7 +140,7 @@ function buildEmailHtml(data: DeliveryEmailData, qrCodeDataUrl: string): string 
           <em>Android users: scan the QR code below in your Settings app</em>
         </p>
         <div class="qr-code">
-          <img src="${qrCodeDataUrl}" alt="eSIM QR Code" />
+          <img src="cid:qrcode" alt="eSIM QR Code" />
         </div>
         <p style="margin-top: 20px; font-size: 12px; color: #888;">
           Keep this QR code safe - you may need it to reinstall your eSIM.
@@ -317,16 +318,16 @@ export async function sendDeliveryEmail(
   console.log(`[EmailService] Preparing delivery email for order ${orderNumber} to ${to}`);
 
   try {
-    // Generate QR code as base64 data URL
+    // Generate QR code as base64 string for CID attachment
     console.log(
       `[EmailService] Generating QR code for LPA: ${esimPayload.lpa.substring(0, 20)}...`,
     );
-    const qrCodeDataUrl = await generateQRCodeDataURL(esimPayload.lpa);
-    console.log(`[EmailService] QR code generated as data URL`);
+    const qrCodeBase64 = await generateQRCodeBase64(esimPayload.lpa);
+    console.log(`[EmailService] QR code generated as base64 for CID attachment`);
 
     // Build email content
     console.log(`[EmailService] Building email HTML...`);
-    const htmlBody = buildEmailHtml(data, qrCodeDataUrl);
+    const htmlBody = buildEmailHtml(data);
     console.log(`[EmailService] Building email text...`);
     const textBody = buildEmailText(data);
     console.log(`[EmailService] Email content built`);
@@ -349,6 +350,13 @@ export async function sendDeliveryEmail(
       subject: `Your eSIM is Ready! - Order ${orderNumber}`,
       html: htmlBody,
       text: textBody,
+      attachments: [
+        {
+          filename: 'qrcode.png',
+          content: qrCodeBase64,
+          contentId: 'qrcode',
+        },
+      ],
     });
 
     if (result.error) {
