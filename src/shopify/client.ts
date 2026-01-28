@@ -189,10 +189,30 @@ export class ShopifyClient {
       },
     );
 
-    const fulfillmentOrders = queryResponse.data?.data?.order?.fulfillmentOrders?.edges || [];
+    // Check for GraphQL errors
+    if (queryResponse.data?.errors) {
+      console.error('[Shopify] GraphQL errors:', JSON.stringify(queryResponse.data.errors));
+      throw new Error(`GraphQL errors: ${JSON.stringify(queryResponse.data.errors)}`);
+    }
+
+    const order = queryResponse.data?.data?.order;
+
+    if (!order) {
+      console.error('[Shopify] Order not found:', orderId);
+      console.error('[Shopify] Full response:', JSON.stringify(queryResponse.data));
+      throw new Error(`Order not found: ${orderId}. Check if order ID is correct.`);
+    }
+
+    const fulfillmentOrders = order.fulfillmentOrders?.edges || [];
+
+    console.log(
+      `[Shopify] Found ${fulfillmentOrders.length} fulfillment orders for order ${orderId}`,
+    );
 
     if (fulfillmentOrders.length === 0) {
-      throw new Error('No fulfillment orders found for this order');
+      throw new Error(
+        `No fulfillment orders found for order ${orderId}. Order may not be ready for fulfillment.`,
+      );
     }
 
     // Find a fulfillable order (status: OPEN, SCHEDULED, or IN_PROGRESS)
