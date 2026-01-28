@@ -1,9 +1,7 @@
 /**
  * Email Service for eSIM Delivery
- * Supports both Resend API (production) and Nodemailer SMTP (local dev)
+ * Uses Resend API for email delivery
  */
-import nodemailer from 'nodemailer';
-import type { Transporter } from 'nodemailer';
 import { Resend } from 'resend';
 import QRCode from 'qrcode';
 import type { PrismaClient } from '@prisma/client';
@@ -25,35 +23,6 @@ export interface DeliveryEmailData {
 }
 
 /**
- * Get or create Nodemailer transporter
- */
-function getTransporter(): Transporter | null {
-  const host = process.env.SMTP_HOST;
-  const port = process.env.SMTP_PORT ? parseInt(process.env.SMTP_PORT) : 465;
-  const user = process.env.SMTP_USER;
-  const pass = process.env.SMTP_PASS;
-
-  if (!host || !user || !pass) {
-    console.warn('[EmailService] SMTP credentials not configured - emails will be logged only');
-    console.warn('[EmailService] Set SMTP_HOST, SMTP_USER, SMTP_PASS, SMTP_PORT');
-    return null;
-  }
-
-  return nodemailer.createTransport({
-    host,
-    port,
-    secure: port === 465, // true for 465, false for other ports
-    auth: {
-      user,
-      pass,
-    },
-    connectionTimeout: 30000, // 30 seconds
-    greetingTimeout: 30000,
-    socketTimeout: 60000,
-  });
-}
-
-/**
  * Parse SM-DP+ address from LPA string
  * LPA format: LPA:1$<smdp_address>$<activation_code>
  */
@@ -66,30 +35,26 @@ function parseSmdpFromLpa(lpa: string): string {
 }
 
 /**
- * Generate QR code as buffer for email attachment
+ * Generate QR code as base64 data URL for email embedding
  */
-export async function generateQRCodeBuffer(lpaString: string): Promise<Buffer> {
-  try {
-    const buffer = await QRCode.toBuffer(lpaString, {
-      errorCorrectionLevel: 'M',
-      margin: 2,
-      width: 300,
-      color: {
-        dark: '#000000',
-        light: '#FFFFFF',
-      },
-    });
-    return buffer;
-  } catch (error) {
-    console.error('[EmailService] QR code generation failed:', error);
-    throw error;
-  }
+async function generateQRCodeDataURL(lpa: string): Promise<string> {
+  const buffer = await QRCode.toBuffer(lpa, {
+    errorCorrectionLevel: 'M',
+    margin: 2,
+    width: 300,
+    color: {
+      dark: '#000000',
+      light: '#FFFFFF',
+    },
+  });
+
+  return `data:image/png;base64,${buffer.toString('base64')}`;
 }
 
 /**
  * Build HTML email content for eSIM delivery
  */
-function buildEmailHtml(data: DeliveryEmailData): string {
+function buildEmailHtml(data: DeliveryEmailData, qrCodeDataUrl: string): string {
   const { orderNumber, productName, esimPayload, region, dataAmount, validity } = data;
 
   const smdpAddress = parseSmdpFromLpa(esimPayload.lpa);
@@ -157,20 +122,28 @@ function buildEmailHtml(data: DeliveryEmailData): string {
       }
 
       <div class="qr-section">
-        <h2>📲 Quick Install</h2>
+        <h2>📲 Install Your eSIM</h2>
         <p style="margin-bottom: 20px;">
-          <a href="https://esimsetup.apple.com/esim_qrcode_provisioning?carddata=${encodeURIComponent(esimPayload.lpa)}" style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white !important; padding: 16px 32px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);">
-            📱 Install eSIM Now
-          </a>
+          <!-- Button for iPhone users -->
+          <table border="0" cellpadding="0" cellspacing="0" style="margin: 0 auto;">
+            <tr>
+              <td align="center" bgcolor="#667eea" style="border-radius: 8px; padding: 16px 32px;">
+                <a href="https://esimsetup.apple.com/esim_qrcode_provisioning?carddata=${encodeURIComponent(esimPayload.lpa)}" target="_blank" style="color: #ffffff; text-decoration: none; font-weight: bold; font-size: 16px; display: inline-block;">
+                  📱 Install on iPhone
+                </a>
+              </td>
+            </tr>
+          </table>
         </p>
         <p style="color: #666; font-size: 14px; margin-bottom: 20px;">
-          <em>Tap the button above to install instantly on iPhone, or scan the QR code below:</em>
+          <em>iPhone users: tap the button above for instant installation</em><br/>
+          <em>Android users: scan the QR code below in your Settings app</em>
         </p>
         <div class="qr-code">
-          <img src="cid:qrcode" alt="eSIM QR Code" />
+          <img src="${qrCodeDataUrl}" alt="eSIM QR Code" />
         </div>
         <p style="margin-top: 20px; font-size: 12px; color: #888;">
-          The install button works on iPhone. Android users should scan the QR code.
+          Keep this QR code safe - you may need it to reinstall your eSIM.
         </p>
       </div>
 
@@ -339,103 +312,48 @@ export async function sendDeliveryEmail(
   console.log(`[EmailService] Preparing delivery email for order ${orderNumber} to ${to}`);
 
   try {
-    // Generate QR code
+    // Generate QR code as base64 data URL
     console.log(
       `[EmailService] Generating QR code for LPA: ${esimPayload.lpa.substring(0, 20)}...`,
     );
-    const qrBuffer = await generateQRCodeBuffer(esimPayload.lpa);
-    console.log(`[EmailService] QR code generated, size: ${qrBuffer.length} bytes`);
+    const qrCodeDataUrl = await generateQRCodeDataURL(esimPayload.lpa);
+    console.log(`[EmailService] QR code generated as data URL`);
 
     // Build email content
     console.log(`[EmailService] Building email HTML...`);
-    const htmlBody = buildEmailHtml(data);
+    const htmlBody = buildEmailHtml(data, qrCodeDataUrl);
     console.log(`[EmailService] Building email text...`);
     const textBody = buildEmailText(data);
     console.log(`[EmailService] Email content built`);
 
-    const fromEmail = process.env.EMAIL_FROM || process.env.SMTP_USER || 'orders@fluxyfi.com';
+    const fromEmail = process.env.EMAIL_FROM || 'orders@fluxyfi.com';
     const bccEmail = process.env.EMAIL_BCC;
-
-    // Try Resend first (for production/Railway)
     const resendApiKey = process.env.RESEND_API_KEY;
-    if (resendApiKey) {
-      console.log(`[EmailService] Using Resend API for delivery`);
-      const resend = new Resend(resendApiKey);
 
-      const result = await resend.emails.send({
-        from: fromEmail,
-        to: to,
-        bcc: bccEmail,
-        subject: `Your eSIM is Ready! - Order ${orderNumber}`,
-        html: htmlBody,
-        text: textBody,
-        attachments: [
-          {
-            filename: 'esim-qrcode.png',
-            content: qrBuffer,
-          },
-        ],
-      });
-
-      if (result.error) {
-        throw new Error(`Resend error: ${result.error.message}`);
-      }
-
-      console.log(`[EmailService] ✅ Email sent via Resend: ${result.data?.id}`);
-      return {
-        success: true,
-        messageId: result.data?.id,
-      };
+    if (!resendApiKey) {
+      throw new Error('RESEND_API_KEY is not configured');
     }
 
-    // Fall back to SMTP (for local development)
-    const transporter = getTransporter();
-    console.log(`[EmailService] Transporter created:`, !!transporter);
+    console.log(`[EmailService] Using Resend API for delivery`);
+    const resend = new Resend(resendApiKey);
 
-    if (!transporter) {
-      // Dry run mode
-      console.log(`[EmailService] EMAIL WOULD BE SENT (dry run):`);
-      console.log(`  To: ${to}`);
-      console.log(`  Subject: Your eSIM is Ready! - Order ${orderNumber}`);
-      console.log(`  LPA: ${esimPayload.lpa}`);
-      console.log(`  Activation Code: ${esimPayload.activationCode}`);
-      console.log(`  ICCID: ${esimPayload.iccid}`);
-
-      return {
-        success: true,
-        messageId: `dry-run-${Date.now()}`,
-      };
-    }
-
-    // Send email via SMTP
-    console.log(
-      `[EmailService] Sending email via SMTP ${process.env.SMTP_HOST}:${process.env.SMTP_PORT}`,
-    );
-    console.log(`[EmailService] From: ${fromEmail}, To: ${to}, BCC: ${bccEmail || 'none'}`);
-    console.log(`[EmailService] About to call sendMail()...`);
-
-    const info = await transporter.sendMail({
+    const result = await resend.emails.send({
       from: fromEmail,
       to: to,
-      bcc: bccEmail || undefined, // Send copy to yourself
+      bcc: bccEmail,
       subject: `Your eSIM is Ready! - Order ${orderNumber}`,
-      text: textBody,
       html: htmlBody,
-      attachments: [
-        {
-          filename: 'esim-qrcode.png',
-          content: qrBuffer,
-          cid: 'qrcode', // Referenced in HTML as <img src="cid:qrcode" />
-        },
-      ],
+      text: textBody,
     });
 
-    console.log(`[EmailService] ✅ Email sent successfully: ${info.messageId}`);
-    console.log(`[EmailService] Response: ${JSON.stringify(info.response)}`);
+    if (result.error) {
+      throw new Error(`Resend error: ${result.error.message}`);
+    }
 
+    console.log(`[EmailService] ✅ Email sent via Resend: ${result.data?.id}`);
     return {
       success: true,
-      messageId: info.messageId,
+      messageId: result.data?.id,
     };
   } catch (error) {
     const errorMsg = error instanceof Error ? error.message : String(error);
