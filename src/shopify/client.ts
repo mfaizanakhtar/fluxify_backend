@@ -150,28 +150,99 @@ export class ShopifyClient {
   }
 
   /**
-   * Create fulfillment for line items
+   * Create fulfillment for an order using GraphQL
+   * Uses the modern fulfillmentCreate mutation
    */
-  async createFulfillment(
-    orderId: string,
-    lineItems: { id: string; quantity: number }[],
-  ): Promise<unknown> {
+  async createFulfillment(orderId: string): Promise<unknown> {
     const token = await this.getAccessToken();
-    const response = await this.axiosInstance.post(
-      `/orders/${orderId}/fulfillments.json`,
+
+    // Step 1: Get the fulfillment order ID
+    const queryFulfillmentOrders = `
+      query getFulfillmentOrders($id: ID!) {
+        order(id: $id) {
+          fulfillmentOrders(first: 1, query: "status:open") {
+            edges {
+              node {
+                id
+                status
+              }
+            }
+          }
+        }
+      }
+    `;
+
+    const queryResponse = await axios.post(
+      `https://${this.config.shopDomain}/admin/api/2026-01/graphql.json`,
       {
-        fulfillment: {
-          line_items: lineItems,
-          notify_customer: false,
+        query: queryFulfillmentOrders,
+        variables: {
+          id: `gid://shopify/Order/${orderId}`,
         },
       },
       {
         headers: {
+          'Content-Type': 'application/json',
           'X-Shopify-Access-Token': token,
         },
       },
     );
-    return response.data.fulfillment;
+
+    const fulfillmentOrders = queryResponse.data?.data?.order?.fulfillmentOrders?.edges || [];
+
+    if (fulfillmentOrders.length === 0) {
+      throw new Error('No open fulfillment orders found for this order');
+    }
+
+    const fulfillmentOrderId = fulfillmentOrders[0].node.id;
+
+    // Step 2: Create the fulfillment (fulfills all items in the fulfillment order)
+    const mutation = `
+      mutation fulfillmentCreate($fulfillment: FulfillmentInput!) {
+        fulfillmentCreate(fulfillment: $fulfillment) {
+          fulfillment {
+            id
+            status
+          }
+          userErrors {
+            field
+            message
+          }
+        }
+      }
+    `;
+
+    const mutationResponse = await axios.post(
+      `https://${this.config.shopDomain}/admin/api/2026-01/graphql.json`,
+      {
+        query: mutation,
+        variables: {
+          fulfillment: {
+            lineItemsByFulfillmentOrder: [
+              {
+                fulfillmentOrderId: fulfillmentOrderId,
+              },
+            ],
+            notifyCustomer: false,
+          },
+        },
+      },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Shopify-Access-Token': token,
+        },
+      },
+    );
+
+    const result = mutationResponse.data?.data?.fulfillmentCreate;
+
+    if (result?.userErrors && result.userErrors.length > 0) {
+      const errors = result.userErrors.map((e: { message: string }) => e.message).join(', ');
+      throw new Error(`Shopify fulfillment errors: ${errors}`);
+    }
+
+    return result?.fulfillment;
   }
 
   /**

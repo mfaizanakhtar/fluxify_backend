@@ -261,19 +261,12 @@ export async function handleProvision(jobData: Record<string, unknown>) {
     }
 
     // Create Shopify fulfillment
-    if (data.orderId && data.lineItemId) {
+    if (data.orderId) {
       try {
-        console.log(
-          `[ProvisionJob] Creating Shopify fulfillment for order ${data.orderId}, line item ${data.lineItemId}`,
-        );
+        console.log(`[ProvisionJob] Creating Shopify fulfillment for order ${data.orderId}`);
 
         const shopify = getShopifyClient();
-        await shopify.createFulfillment(data.orderId, [
-          {
-            id: data.lineItemId,
-            quantity: 1,
-          },
-        ]);
+        await shopify.createFulfillment(data.orderId);
 
         console.log(`[ProvisionJob] Shopify fulfillment created successfully`);
       } catch (fulfillmentError) {
@@ -283,7 +276,7 @@ export async function handleProvision(jobData: Record<string, unknown>) {
         // Don't throw - eSIM is delivered, fulfillment failure is recoverable
       }
     } else {
-      console.warn(`[ProvisionJob] Missing orderId or lineItemId - skipping Shopify fulfillment`);
+      console.warn(`[ProvisionJob] Missing orderId - skipping Shopify fulfillment`);
     }
 
     return { ok: true };
