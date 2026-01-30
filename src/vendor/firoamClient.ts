@@ -359,4 +359,89 @@ export default class FiRoamClient {
       message: resp?.message || 'Unknown error',
     };
   }
+
+  /**
+   * Query eSIM order information list with usage data.
+   * Can query by orderNum, iccid, or other filters.
+   * Returns detailed usage statistics including data consumed (usedMb).
+   *
+   * @param params - Query parameters
+   * @param params.orderNum - (Optional) Order number
+   * @param params.iccid - (Optional) ICCID to query
+   * @param params.pageNo - (Optional) Page number, default 1
+   * @param params.pageSize - (Optional) Results per page, default 30
+   * @returns { raw, orders, usage } - Raw response, order list, and usage data
+   */
+  async queryEsimOrder(params: {
+    orderNum?: string;
+    iccid?: string;
+    pageNo?: number;
+    pageSize?: number;
+  }) {
+    const body: Record<string, unknown> = {
+      pageNo: params.pageNo || 1,
+      pageSize: params.pageSize || 30,
+    };
+
+    if (params.orderNum) {
+      body.orderNum = params.orderNum;
+    }
+
+    if (params.iccid) {
+      body.iccid = params.iccid;
+    }
+
+    const resp = await this.post('/api_esim/queryEsimOrder', body);
+
+    if (!isSuccessResponse(resp)) {
+      return {
+        raw: resp,
+        success: false,
+        error: resp?.message || 'Query failed',
+      };
+    }
+
+    // Extract order data
+    const data = resp.data as Record<string, unknown> | undefined;
+    const rows = (data?.rows as unknown[]) || [];
+
+    // Normalize usage data for each package
+    const orders = rows.map((order: unknown) => {
+      const orderData = order as Record<string, unknown>;
+      const packageList = (orderData.packageList as unknown[]) || [];
+
+      const packages = packageList.map((pkg: unknown) => {
+        const pkgData = pkg as Record<string, unknown>;
+        return {
+          iccid: pkgData.iccid,
+          flows: pkgData.flows, // Total data in MB/GB
+          unit: pkgData.unit, // MB or GB
+          usedMb: pkgData.usedMb, // Used data in MB
+          days: pkgData.days,
+          name: pkgData.name,
+          beginDate: pkgData.beginDate,
+          endDate: pkgData.endDate,
+          status: pkgData.status,
+          priceId: pkgData.priceId,
+        };
+      });
+
+      return {
+        orderNum: orderData.orderNum,
+        skuId: orderData.skuId,
+        skuName: orderData.skuName,
+        createTime: orderData.createTime,
+        status: orderData.status,
+        packages,
+      };
+    });
+
+    return {
+      raw: resp,
+      success: true,
+      orders,
+      total: data?.total || 0,
+      page: data?.page || 1,
+    };
+  }
 }

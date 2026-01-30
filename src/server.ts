@@ -1,5 +1,6 @@
 import Fastify from 'fastify';
 import webhookRoutes from './api/webhook';
+import usageRoutes from './api/usage';
 import { getShopifyClient } from './shopify/client';
 
 export default async function buildServer() {
@@ -34,6 +35,7 @@ export default async function buildServer() {
   app.get('/health', async () => ({ status: 'ok' }));
 
   app.register(webhookRoutes, { prefix: '/webhook' });
+  app.register(usageRoutes);
 
   return app;
 }

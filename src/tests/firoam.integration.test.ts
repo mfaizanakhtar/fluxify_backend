@@ -719,4 +719,118 @@ describe('FiRoam API - Live Integration Tests', () => {
       throw error;
     }
   }, 60000); // Longer timeout for multi-step test
+
+  /**
+   * Complete E2E test: Issue eSIM -> Query Usage -> Verify Data -> Cancel
+   * This test demonstrates the full lifecycle including data usage tracking
+   */
+  it('[LIVE] should issue eSIM, query usage data, and cancel order', async () => {
+    console.log('\n📝 Starting E2E test with usage tracking...');
+
+    const client = new FiRoamClient();
+    let orderNum: string | undefined;
+    let iccid: string | undefined;
+
+    try {
+      // Step 1: Find cheapest plan
+      console.log('\n🔍 Step 1: Finding cheapest plan...');
+      const cheapestPlan = await findCheapestPlan(client);
+      if (!cheapestPlan) {
+        throw new Error('No valid plans found');
+      }
+
+      console.log(`   Found: ${cheapestPlan.display}`);
+      console.log(`   Price: $${cheapestPlan.price}`);
+      console.log(`   SKU: ${cheapestPlan.skuId}, Price ID: ${cheapestPlan.priceId}`);
+
+      // Step 2: Place order
+      console.log('\n📦 Step 2: Placing order...');
+      const orderPayload = buildOrderPayload(cheapestPlan);
+      console.log(`   Payload: ${JSON.stringify(orderPayload)}`);
+
+      const result = await client.addEsimOrder(orderPayload);
+
+      expect(result.raw).toBeDefined();
+      expect(result.canonical).toBeDefined();
+
+      orderNum = extractOrderNumber(result.raw);
+      expect(orderNum).toBeDefined();
+
+      console.log(`✅ Order placed: ${orderNum}`);
+      console.log(`   Canonical: ${JSON.stringify(result.canonical, null, 2)}`);
+
+      iccid = result.canonical?.iccid as string | undefined;
+      expect(iccid).toBeDefined();
+      console.log(`✅ ICCID: ${iccid}`);
+
+      // Step 3: Query usage data
+      console.log('\n📊 Step 3: Querying usage data...');
+      const usageResult = await client.queryEsimOrder({ iccid: iccid! });
+
+      expect(usageResult.success).toBe(true);
+      expect(usageResult.orders).toBeDefined();
+      expect(usageResult.orders!.length).toBeGreaterThan(0);
+
+      const order = usageResult.orders![0];
+      console.log(`   Order: ${order.orderNum}`);
+      console.log(`   SKU: ${order.skuName}`);
+      console.log(`   Packages: ${order.packages.length}`);
+
+      // Find matching package
+      const packageData = order.packages.find((pkg) => pkg.iccid === iccid);
+      expect(packageData).toBeDefined();
+
+      console.log('\n   📈 Usage Details:');
+      console.log(`      Data: ${packageData!.flows}${packageData!.unit}`);
+      console.log(`      Used: ${packageData!.usedMb} MB`);
+      console.log(`      Days: ${packageData!.days}`);
+      console.log(`      Start: ${packageData!.beginDate}`);
+      console.log(`      End: ${packageData!.endDate}`);
+      console.log(`      Status: ${packageData!.status}`);
+
+      // Verify usage data structure
+      expect(packageData!.flows).toBeDefined();
+      expect(packageData!.unit).toBeDefined();
+      expect(packageData!.usedMb).toBeDefined();
+      expect(typeof packageData!.usedMb).toBe('number');
+      expect(packageData!.iccid).toBe(iccid);
+
+      // Step 4: Cancel order
+      console.log(`\n🔄 Step 4: Cancelling order ${orderNum}...`);
+      const cancelResult = await client.cancelOrder({
+        orderNum: orderNum!,
+        iccids: iccid!,
+      });
+
+      console.log(`   Cancel status: ${cancelResult.success ? 'SUCCESS' : 'FAILED'}`);
+      console.log(`   Message: ${cancelResult.message}`);
+
+      if (cancelResult.success) {
+        console.log('✅ Order cancelled successfully');
+      } else {
+        console.log(`⚠️  Cancellation failed: ${cancelResult.message}`);
+      }
+
+      console.log('\n✅ E2E usage tracking test completed');
+      console.log(`💰 Cost: ~$${cheapestPlan.price}`);
+    } catch (error) {
+      console.error('\n❌ E2E usage test failed:', error);
+
+      // Cleanup attempt
+      if (orderNum && iccid) {
+        console.log(`\n🔄 Attempting cleanup for order ${orderNum}...`);
+        try {
+          const cleanupResult = await client.cancelOrder({
+            orderNum,
+            iccids: iccid,
+          });
+          console.log(`   Cleanup: ${cleanupResult.success ? 'SUCCESS' : 'FAILED'}`);
+        } catch (cleanupError) {
+          console.error('❌ Cleanup failed:', cleanupError);
+        }
+      }
+
+      throw error;
+    }
+  }, 60000); // Extended timeout for multi-step operation
 });
