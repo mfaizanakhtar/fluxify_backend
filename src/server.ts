@@ -28,7 +28,7 @@ export default async function buildServer() {
         return;
       }
 
-      if (allowedOrigins.some(allowed => origin.startsWith(allowed))) {
+      if (allowedOrigins.some((allowed) => origin.startsWith(allowed))) {
         callback(null, true);
       } else {
         callback(new Error('Not allowed by CORS'), false);
