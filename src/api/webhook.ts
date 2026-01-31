@@ -40,134 +40,125 @@ export default function webhookRoutes(
    * POST /webhook/orders/paid
    * Handle Shopify order payment webhook
    */
-  app.post(
-    '/orders/paid',
-    {
-      config: {
-        // Disable automatic JSON parsing - we need raw body for HMAC
-        rawBody: true,
-      },
-    },
-    async (request: FastifyRequest, reply: FastifyReply) => {
-      try {
-        // Get raw body for HMAC verification
-        const rawBody = (request as unknown as { rawBody?: string }).rawBody;
-        const hmacHeader = request.headers['x-shopify-hmac-sha256'] as string;
-        const shopDomain = request.headers['x-shopify-shop-domain'] as string;
+  app.post('/orders/paid', async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      // Get raw body for HMAC verification
+      const rawBody = (request as unknown as { rawBody?: string }).rawBody;
+      const hmacHeader = request.headers['x-shopify-hmac-sha256'] as string;
+      const shopDomain = request.headers['x-shopify-shop-domain'] as string;
 
-        if (!rawBody) {
-          app.log.error('[Webhook] No raw body available');
-          return reply.code(400).send({ error: 'Missing request body' });
-        }
+      if (!rawBody) {
+        app.log.error('[Webhook] No raw body available');
+        return reply.code(400).send({ error: 'Missing request body' });
+      }
 
-        if (!hmacHeader) {
-          app.log.error('[Webhook] Missing HMAC header');
-          return reply.code(401).send({ error: 'Missing HMAC signature' });
-        }
+      if (!hmacHeader) {
+        app.log.error('[Webhook] Missing HMAC header');
+        return reply.code(401).send({ error: 'Missing HMAC signature' });
+      }
 
-        // Verify HMAC signature
-        const webhookSecret = process.env.SHOPIFY_WEBHOOK_SECRET!;
-        if (!webhookSecret) {
-          app.log.error('[Webhook] SHOPIFY_WEBHOOK_SECRET not configured');
-          return reply.code(500).send({ error: 'Server misconfiguration' });
-        }
+      // Verify HMAC signature
+      const webhookSecret = process.env.SHOPIFY_WEBHOOK_SECRET!;
+      if (!webhookSecret) {
+        app.log.error('[Webhook] SHOPIFY_WEBHOOK_SECRET not configured');
+        return reply.code(500).send({ error: 'Server misconfiguration' });
+      }
 
-        const isValid = verifyShopifyWebhook(rawBody, hmacHeader, webhookSecret);
-        if (!isValid) {
-          app.log.error('[Webhook] Invalid HMAC signature');
-          return reply.code(401).send({ error: 'Invalid signature' });
-        }
+      const isValid = verifyShopifyWebhook(rawBody, hmacHeader, webhookSecret);
+      if (!isValid) {
+        app.log.error('[Webhook] Invalid HMAC signature');
+        return reply.code(401).send({ error: 'Invalid signature' });
+      }
 
-        // Parse webhook payload
-        const webhook: ShopifyOrderPaidWebhook = JSON.parse(rawBody);
-        const orderId = webhook.id.toString();
-        const orderName = webhook.name;
+      // Parse webhook payload
+      const webhook: ShopifyOrderPaidWebhook = JSON.parse(rawBody);
+      const orderId = webhook.id.toString();
+      const orderName = webhook.name;
 
-        // Debug: Log email fields
-        app.log.info(
-          `[Webhook] Order ${orderName} - webhook.email: ${webhook.email}, customer?.email: ${webhook.customer?.email}`,
+      // Debug: Log email fields
+      app.log.info(
+        `[Webhook] Order ${orderName} - webhook.email: ${webhook.email}, customer?.email: ${webhook.customer?.email}`,
+      );
+
+      // Use customer email if available, fallback to order email
+      const customerEmail = webhook.customer?.email || webhook.email;
+
+      if (!customerEmail) {
+        app.log.error(
+          `[Webhook] No email found for order ${orderName}. Webhook payload: ${JSON.stringify({
+            email: webhook.email,
+            customer: webhook.customer,
+            contact_email: webhook.contact_email,
+            billing_address: webhook.billing_address?.email,
+          })}`,
         );
+        return reply.code(400).send({ error: 'No customer email' });
+      }
 
-        // Use customer email if available, fallback to order email
-        const customerEmail = webhook.customer?.email || webhook.email;
+      app.log.info(`[Webhook] Received orders/paid for ${orderName} (${orderId})`);
 
-        if (!customerEmail) {
-          app.log.error(
-            `[Webhook] No email found for order ${orderName}. Webhook payload: ${JSON.stringify({
-              email: webhook.email,
-              customer: webhook.customer,
-              contact_email: webhook.contact_email,
-              billing_address: webhook.billing_address?.email,
-            })}`,
+      // Get job queue
+      const queue = getJobQueue();
+
+      // Process each line item
+      for (const lineItem of webhook.line_items) {
+        const lineItemId = lineItem.id.toString();
+        const variantId = lineItem.variant_id.toString();
+
+        // Check if already processed (idempotency)
+        const existing = await prisma.esimDelivery.findFirst({
+          where: {
+            orderId,
+            lineItemId,
+          },
+        });
+
+        if (existing) {
+          app.log.info(
+            `[Webhook] Order ${orderName} line item ${lineItemId} already processed, skipping`,
           );
-          return reply.code(400).send({ error: 'No customer email' });
+          continue;
         }
 
-        app.log.info(`[Webhook] Received orders/paid for ${orderName} (${orderId})`);
-
-        // Get job queue
-        const queue = getJobQueue();
-
-        // Process each line item
-        for (const lineItem of webhook.line_items) {
-          const lineItemId = lineItem.id.toString();
-          const variantId = lineItem.variant_id.toString();
-
-          // Check if already processed (idempotency)
-          const existing = await prisma.esimDelivery.findFirst({
-            where: {
-              orderId,
-              lineItemId,
-            },
-          });
-
-          if (existing) {
-            app.log.info(
-              `[Webhook] Order ${orderName} line item ${lineItemId} already processed, skipping`,
-            );
-            continue;
-          }
-
-          // Create delivery record
-          const delivery = await prisma.esimDelivery.create({
-            data: {
-              shop: shopDomain,
-              orderId,
-              orderName,
-              lineItemId,
-              variantId,
-              customerEmail,
-              status: 'pending',
-            },
-          });
-
-          app.log.info(`[Webhook] Created delivery record ${delivery.id} for ${orderName}`);
-
-          // Enqueue provisioning job
-          await queue.send('provision-esim', {
-            deliveryId: delivery.id,
+        // Create delivery record
+        const delivery = await prisma.esimDelivery.create({
+          data: {
+            shop: shopDomain,
             orderId,
             orderName,
             lineItemId,
             variantId,
             customerEmail,
-            sku: lineItem.sku || null,
-          });
+            status: 'pending',
+          },
+        });
 
-          app.log.info(`[Webhook] Enqueued provisioning job for delivery ${delivery.id}`);
-        }
+        app.log.info(`[Webhook] Created delivery record ${delivery.id} for ${orderName}`);
 
-        // Always return 200 quickly to avoid Shopify retries
-        return reply.code(200).send({ received: true });
-      } catch (error) {
-        const err = error as Error;
-        app.log.error({ err }, '[Webhook] Error processing webhook');
+        // Enqueue provisioning job
+        await queue.send('provision-esim', {
+          deliveryId: delivery.id,
+          orderId,
+          orderName,
+          lineItemId,
+          variantId,
+          customerEmail,
+          sku: lineItem.sku || null,
+        });
 
-        // Still return 200 to avoid retries - log error for investigation
-        return reply.code(200).send({ received: true, error: 'Processing error' });
+        app.log.info(`[Webhook] Enqueued provisioning job for delivery ${delivery.id}`);
       }
-    },
-  );
+
+      // Always return 200 quickly to avoid Shopify retries
+      return reply.code(200).send({ received: true });
+    } catch (error) {
+      const err = error as Error;
+      app.log.error({ err }, '[Webhook] Error processing webhook');
+
+      // Still return 200 to avoid retries - log error for investigation
+      return reply.code(200).send({ received: true, error: 'Processing error' });
+    }
+  });
 
   /**
    * GET /webhook/test

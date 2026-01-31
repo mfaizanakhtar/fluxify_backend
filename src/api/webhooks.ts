@@ -28,12 +28,6 @@ export async function shopifyWebhookRoutes(server: FastifyInstance) {
    */
   server.post(
     '/webhooks/shopify/orders/paid',
-    {
-      config: {
-        // Disable body parsing - we need raw body for HMAC verification
-        rawBody: true,
-      },
-    },
     async (request: FastifyRequest, reply: FastifyReply) => {
       try {
         // Get raw body and HMAC header
