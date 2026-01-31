@@ -212,49 +212,47 @@ async function generateEsimPDF(data: DeliveryEmailData): Promise<string> {
           width: 500,
           align: 'center',
         });
-      yPos += 30;
+      yPos += 20;
+
+      // Check if we need a new page for manual installation section (needs ~150px)
+      if (yPos > 650) {
+        doc.addPage();
+        yPos = 50;
+      }
 
       // Manual Installation Details
       doc
-        .fontSize(14)
+        .fontSize(12)
         .font('Helvetica-Bold')
         .fillColor('#333333')
-        .text('Manual Installation', 50, yPos);
-      yPos += 20;
+        .text('Manual Installation (if QR scan fails)', 50, yPos);
+      yPos += 18;
 
-      doc.fontSize(10).font('Helvetica-Bold').text('SM-DP+ Address:', 50, yPos);
-      yPos += 13;
+      doc.fontSize(9).font('Helvetica-Bold').fillColor('#333333').text('SM-DP+ Address:', 50, yPos);
+      yPos += 12;
+      doc.fontSize(8).font('Courier').fillColor('#2d3748').text(smdpAddress, 50, yPos);
+      yPos += 14;
+
       doc
         .fontSize(9)
-        .font('Courier')
-        .fillColor('#2d3748')
-        .text(smdpAddress, 50, yPos, { width: 500 });
-      yPos += 20;
-
-      doc
-        .fontSize(10)
         .font('Helvetica-Bold')
         .fillColor('#333333')
         .text('Activation Code:', 50, yPos);
-      yPos += 13;
+      yPos += 12;
       doc
-        .fontSize(9)
+        .fontSize(8)
         .font('Courier')
         .fillColor('#2d3748')
-        .text(esimPayload.activationCode, 50, yPos, { width: 500 });
+        .text(esimPayload.activationCode, 50, yPos);
+      yPos += 14;
+
+      doc.fontSize(9).font('Helvetica-Bold').fillColor('#333333').text('ICCID:', 50, yPos);
+      yPos += 12;
+      doc.fontSize(8).font('Courier').fillColor('#2d3748').text(esimPayload.iccid, 50, yPos);
       yPos += 20;
 
-      doc.fontSize(10).font('Helvetica-Bold').fillColor('#333333').text('ICCID:', 50, yPos);
-      yPos += 13;
-      doc
-        .fontSize(9)
-        .font('Courier')
-        .fillColor('#2d3748')
-        .text(esimPayload.iccid, 50, yPos, { width: 500 });
-      yPos += 25;
-
       // Add new page for instructions if needed
-      if (yPos > 720) {
+      if (yPos > 650) {
         doc.addPage();
         yPos = 50;
       }
