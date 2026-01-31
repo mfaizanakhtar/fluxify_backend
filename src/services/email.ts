@@ -390,6 +390,23 @@ function buildEmailHtml(data: DeliveryEmailData): string {
           : ''
       }
 
+      <div style="background: linear-gradient(135deg, #e0f2fe 0%, #dbeafe 100%); padding: 25px; border-radius: 12px; margin: 25px 0; border: 2px solid #3b82f6;">
+        <h2 style="color: #1e40af; margin: 0 0 15px 0; font-size: 20px;">📊 Track Your Data Usage</h2>
+        <p style="color: #1e3a8a; margin: 0 0 20px 0; font-size: 15px;">Monitor your eSIM data usage in real-time and check remaining balance.</p>
+        <table border="0" cellpadding="0" cellspacing="0" style="margin: 0 auto;">
+          <tr>
+            <td align="center" bgcolor="#3b82f6" style="border-radius: 8px; padding: 14px 28px; box-shadow: 0 4px 6px rgba(59, 130, 246, 0.3);">
+              <a href="https://fluxyfi.com/pages/my-esim-usage?iccid=${esimPayload.iccid}" target="_blank" style="color: #ffffff; text-decoration: none; font-weight: bold; font-size: 16px; display: inline-block;">
+                📈 View My Usage Dashboard
+              </a>
+            </td>
+          </tr>
+        </table>
+        <p style="color: #64748b; margin: 15px 0 0 0; font-size: 13px; text-align: center;">
+          <em>Check your remaining data, usage history, and validity period</em>
+        </p>
+      </div>
+
       <div class="qr-section">
         <h2>📲 Install Your eSIM</h2>
         <p style="margin-bottom: 20px;">
@@ -542,7 +559,13 @@ ${region ? `Region: ${region}` : ''}
 ${dataAmount ? `Data: ${dataAmount}` : ''}
 ${validity ? `Validity: ${validity}` : ''}
 
-📲 INSTALLATION
+� TRACK YOUR DATA USAGE
+Monitor your eSIM data usage in real-time:
+https://fluxyfi.com/pages/my-esim-usage?iccid=${esimPayload.iccid}
+
+Check your remaining data, usage history, and validity period.
+
+�📲 INSTALLATION
 Scan the QR code attached to this email, or use the manual details below.
 
 ⌨️ MANUAL INSTALLATION

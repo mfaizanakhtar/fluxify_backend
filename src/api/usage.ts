@@ -100,8 +100,9 @@ export default function usageRoutes(
         // Return formatted usage data
         return reply.send({
           iccid,
-          orderNum: order.orderNum,
+          orderNum: matchingDelivery.orderName, // Shopify order number (e.g., #1001)
           packageName: packageData.name,
+          region: order.skuName, // Region/country from SKU name
           usage: {
             total: packageData.flows,
             unit: packageData.unit,

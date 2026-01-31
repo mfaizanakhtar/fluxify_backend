@@ -91,6 +91,10 @@ themes/
             <span class="esim-info-value" id="esim-order-num">-</span>
           </div>
           <div class="esim-info-item">
+            <span class="esim-info-label">Region</span>
+            <span class="esim-info-value" id="esim-region">-</span>
+          </div>
+          <div class="esim-info-item">
             <span class="esim-info-label">Package</span>
             <span class="esim-info-value" id="esim-package-name">-</span>
           </div>
@@ -256,6 +260,7 @@ themes/
     // Info
     iccid: document.getElementById('esim-iccid'),
     orderNum: document.getElementById('esim-order-num'),
+    region: document.getElementById('esim-region'),
     packageName: document.getElementById('esim-package-name'),
     status: document.getElementById('esim-status'),
     
@@ -359,6 +364,7 @@ themes/
     // Update eSIM Info
     elements.iccid.textContent = data.iccid || '-';
     elements.orderNum.textContent = data.orderNum || '-';
+    elements.region.textContent = data.region || '-';
     elements.packageName.textContent = data.packageName || '-';
     elements.status.innerHTML = getStatusBadge(data.status);
 
