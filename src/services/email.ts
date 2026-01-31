@@ -137,8 +137,8 @@ async function generateEsimPDF(data: DeliveryEmailData): Promise<string> {
         .fontSize(14)
         .font('Helvetica-Bold')
         .fillColor('#c53030')
-        .text('⚠️ READ BEFORE INSTALLING', 50, yPos);
-      yPos += 20;
+        .text('READ BEFORE INSTALLING', 50, yPos);
+      yPos += 18;
       doc.fontSize(10).font('Helvetica').fillColor('#333333');
 
       const importantNotes = [
@@ -151,16 +151,10 @@ async function generateEsimPDF(data: DeliveryEmailData): Promise<string> {
 
       importantNotes.forEach((note) => {
         doc.text(note, 70, yPos);
-        yPos += 16;
+        yPos += 14;
       });
 
-      yPos += 25;
-
-      // Add page break if needed
-      if (yPos > 650) {
-        doc.addPage();
-        yPos = 50;
-      }
+      yPos += 20;
 
       // iPhone Quick Install Button
       doc
@@ -292,10 +286,10 @@ async function generateEsimPDF(data: DeliveryEmailData): Promise<string> {
 
       iPhoneSteps.forEach((step) => {
         doc.text(step, 70, yPos);
-        yPos += 16;
+        yPos += 14;
       });
 
-      yPos += 12;
+      yPos += 10;
 
       // Android
       doc.fontSize(12).font('Helvetica-Bold').fillColor('#667eea').text('Android', 50, yPos);
@@ -312,24 +306,18 @@ async function generateEsimPDF(data: DeliveryEmailData): Promise<string> {
 
       androidSteps.forEach((step) => {
         doc.text(step, 70, yPos);
-        yPos += 16;
+        yPos += 14;
       });
 
-      yPos += 20;
-
-      // Add new page if needed for activation section
-      if (yPos > 650) {
-        doc.addPage();
-        yPos = 50;
-      }
+      yPos += 15;
 
       // Activation Instructions
       doc
         .fontSize(14)
         .font('Helvetica-Bold')
         .fillColor('#f59e0b')
-        .text('🔌 How to Activate (When You Arrive)', 50, yPos);
-      yPos += 20;
+        .text('How to Activate (When You Arrive)', 50, yPos);
+      yPos += 18;
       doc.fontSize(10).font('Helvetica').fillColor('#333333');
 
       const activationSteps = [
@@ -341,27 +329,21 @@ async function generateEsimPDF(data: DeliveryEmailData): Promise<string> {
 
       activationSteps.forEach((step) => {
         doc.text(step, 70, yPos);
-        yPos += 16;
+        yPos += 14;
       });
 
-      yPos += 20;
-
-      // Add new page if needed for tracking section
-      if (yPos > 650) {
-        doc.addPage();
-        yPos = 50;
-      }
+      yPos += 15;
 
       // Usage Tracking Section - AFTER activation
       doc
         .fontSize(14)
         .font('Helvetica-Bold')
         .fillColor('#1a1f71')
-        .text('📊 After Activation: Monitor Your Data', 50, yPos);
-      yPos += 20;
+        .text('After Activation: Monitor Your Data', 50, yPos);
+      yPos += 18;
       doc.fontSize(10).font('Helvetica').fillColor('#333333');
       doc.text('Once your eSIM is active, track your data usage in real-time:', 50, yPos);
-      yPos += 15;
+      yPos += 13;
       doc
         .fontSize(9)
         .font('Helvetica')
@@ -370,10 +352,10 @@ async function generateEsimPDF(data: DeliveryEmailData): Promise<string> {
           link: `https://fluxyfi.com/pages/my-esim-usage?iccid=${esimPayload.iccid}`,
           underline: true,
         });
-      yPos += 15;
+      yPos += 13;
       doc.fontSize(9).font('Helvetica').fillColor('#666666');
       doc.text('Check remaining data, usage history, and validity period', 50, yPos);
-      yPos += 20;
+      yPos += 15;
 
       // Add new page if needed
       if (yPos > 650) {
@@ -478,21 +460,6 @@ function buildEmailHtml(data: DeliveryEmailData): string {
       </div>
 
       <div class="qr-section">
-        <p style="color: #1e3a8a; margin: 0 0 20px 0; font-size: 15px;">Monitor your eSIM data usage in real-time and check remaining balance.</p>
-        <table border="0" cellpadding="0" cellspacing="0" style="margin: 0 auto;">
-          <tr>
-            <td align="center" bgcolor="#3b82f6" style="border-radius: 8px; padding: 14px 28px; box-shadow: 0 4px 6px rgba(59, 130, 246, 0.3);">
-              <a href="https://fluxyfi.com/pages/my-esim-usage?iccid=${esimPayload.iccid}" target="_blank" style="color: #ffffff; text-decoration: none; font-weight: bold; font-size: 16px; display: inline-block;">
-                📈 View My Usage Dashboard
-              </a>
-            </td>
-          </tr>
-        </table>
-        <p style="color: #64748b; margin: 15px 0 0 0; font-size: 13px; text-align: center;">
-          <em>Check your remaining data, usage history, and validity period</em>
-        </p>
-      </div>
-
         <h2>📲 Install Your eSIM</h2>
         <p style="margin-bottom: 20px;">
           <!-- Button for iPhone users -->
