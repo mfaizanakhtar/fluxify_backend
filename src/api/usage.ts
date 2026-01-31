@@ -93,6 +93,10 @@ export default function usageRoutes(
         const usedMb = packageData.usedMb as number;
         const usagePercent = totalMb > 0 ? (usedMb / totalMb) * 100 : 0;
 
+        // Set cache headers to reduce vendor API calls
+        // Usage data doesn't change frequently, cache for 5 minutes
+        reply.header('Cache-Control', 'public, max-age=300, s-maxage=300');
+
         // Return formatted usage data
         return reply.send({
           iccid,

@@ -1,4 +1,6 @@
 import Fastify from 'fastify';
+import cors from '@fastify/cors';
+import rateLimit from '@fastify/rate-limit';
 import webhookRoutes from './api/webhook';
 import usageRoutes from './api/usage';
 import { getShopifyClient } from './shopify/client';
@@ -8,6 +10,45 @@ export default async function buildServer() {
     logger: true,
     // Enable raw body for webhook HMAC verification
     bodyLimit: 1048576, // 1MB
+  });
+
+  // Configure CORS for Shopify storefront
+  await app.register(cors, {
+    origin: (origin, callback) => {
+      const shopifyDomain = process.env.SHOPIFY_SHOP_DOMAIN;
+      const allowedOrigins = [
+        `https://${shopifyDomain}`,
+        'http://localhost:3000', // Local development
+        'http://127.0.0.1:3000',
+      ];
+
+      // Allow requests with no origin (like mobile apps or curl)
+      if (!origin) {
+        callback(null, true);
+        return;
+      }
+
+      if (allowedOrigins.some(allowed => origin.startsWith(allowed))) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'), false);
+      }
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'OPTIONS'],
+  });
+
+  // Configure rate limiting to prevent abuse
+  await app.register(rateLimit, {
+    max: 100, // Maximum 100 requests
+    timeWindow: '15 minutes', // Per 15 minute window
+    cache: 10000, // Cache size
+    allowList: ['127.0.0.1'], // Whitelist localhost for testing
+    errorResponseBuilder: () => ({
+      statusCode: 429,
+      error: 'Too Many Requests',
+      message: 'Rate limit exceeded. Please try again later.',
+    }),
   });
 
   // Add raw body parser for webhooks
