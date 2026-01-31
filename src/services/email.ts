@@ -126,6 +126,42 @@ async function generateEsimPDF(data: DeliveryEmailData): Promise<string> {
         }
       }
 
+      // Add page break if needed
+      if (yPos > 650) {
+        doc.addPage();
+        yPos = 50;
+      }
+
+      // Important Notes - BEFORE installation
+      doc
+        .fontSize(14)
+        .font('Helvetica-Bold')
+        .fillColor('#c53030')
+        .text('⚠️ READ BEFORE INSTALLING', 50, yPos);
+      yPos += 20;
+      doc.fontSize(10).font('Helvetica').fillColor('#333333');
+
+      const importantNotes = [
+        '• Install BEFORE you travel - you need WiFi to install',
+        '• Each QR code can only be installed ONCE - keep this document safe',
+        '• After installing, keep the eSIM turned OFF until you arrive',
+        '• Only turn it on and enable Data Roaming when you reach your destination',
+        "• Don't delete the eSIM profile - it cannot be reinstalled",
+      ];
+
+      importantNotes.forEach((note) => {
+        doc.text(note, 70, yPos);
+        yPos += 16;
+      });
+
+      yPos += 25;
+
+      // Add page break if needed
+      if (yPos > 650) {
+        doc.addPage();
+        yPos = 50;
+      }
+
       // iPhone Quick Install Button
       doc
         .fontSize(11)
@@ -242,7 +278,7 @@ async function generateEsimPDF(data: DeliveryEmailData): Promise<string> {
         .fontSize(12)
         .font('Helvetica-Bold')
         .fillColor('#667eea')
-        .text('iPhone (iOS 12.1+)', 50, yPos);
+        .text('iPhone (iOS 17.4+)', 50, yPos);
       yPos += 18;
       doc.fontSize(10).font('Helvetica').fillColor('#333333');
 
@@ -279,31 +315,71 @@ async function generateEsimPDF(data: DeliveryEmailData): Promise<string> {
         yPos += 16;
       });
 
-      yPos += 15;
+      yPos += 20;
 
-      // Important Notes
+      // Add new page if needed for activation section
+      if (yPos > 650) {
+        doc.addPage();
+        yPos = 50;
+      }
+
+      // Activation Instructions
       doc
-        .fontSize(12)
+        .fontSize(14)
         .font('Helvetica-Bold')
-        .fillColor('#c53030')
-        .text('IMPORTANT NOTES', 50, yPos);
-      yPos += 18;
-      doc.fontSize(9).font('Helvetica').fillColor('#333333');
+        .fillColor('#f59e0b')
+        .text('🔌 How to Activate (When You Arrive)', 50, yPos);
+      yPos += 20;
+      doc.fontSize(10).font('Helvetica').fillColor('#333333');
 
-      const notes = [
-        '• Each QR code can only be installed ONCE - keep this document safe',
-        '• Install BEFORE you travel (requires WiFi connection)',
-        '• Keep the eSIM turned OFF until you reach your destination',
-        "• Enable Data Roaming when you're ready to use it",
-        "• Don't delete the eSIM profile - it cannot be reinstalled",
+      const activationSteps = [
+        '1. When you arrive at your destination, go to Settings → Cellular/Mobile',
+        '2. Select your eSIM and turn it on',
+        '3. Enable Data Roaming for the eSIM',
+        '4. If no connection, toggle Airplane Mode on/off or restart your phone',
       ];
 
-      notes.forEach((note) => {
-        doc.text(note, 70, yPos);
-        yPos += 14;
+      activationSteps.forEach((step) => {
+        doc.text(step, 70, yPos);
+        yPos += 16;
       });
 
-      yPos += 10;
+      yPos += 20;
+
+      // Add new page if needed for tracking section
+      if (yPos > 650) {
+        doc.addPage();
+        yPos = 50;
+      }
+
+      // Usage Tracking Section - AFTER activation
+      doc
+        .fontSize(14)
+        .font('Helvetica-Bold')
+        .fillColor('#1a1f71')
+        .text('📊 After Activation: Monitor Your Data', 50, yPos);
+      yPos += 20;
+      doc.fontSize(10).font('Helvetica').fillColor('#333333');
+      doc.text('Once your eSIM is active, track your data usage in real-time:', 50, yPos);
+      yPos += 15;
+      doc
+        .fontSize(9)
+        .font('Helvetica')
+        .fillColor('#1a1f71')
+        .text(`https://fluxyfi.com/pages/my-esim-usage?iccid=${esimPayload.iccid}`, 50, yPos, {
+          link: `https://fluxyfi.com/pages/my-esim-usage?iccid=${esimPayload.iccid}`,
+          underline: true,
+        });
+      yPos += 15;
+      doc.fontSize(9).font('Helvetica').fillColor('#666666');
+      doc.text('Check remaining data, usage history, and validity period', 50, yPos);
+      yPos += 20;
+
+      // Add new page if needed
+      if (yPos > 650) {
+        doc.addPage();
+        yPos = 50;
+      }
 
       // Footer
       doc
@@ -390,8 +466,18 @@ function buildEmailHtml(data: DeliveryEmailData): string {
           : ''
       }
 
-      <div style="background: linear-gradient(135deg, #e0f2fe 0%, #dbeafe 100%); padding: 25px; border-radius: 12px; margin: 25px 0; border: 2px solid #3b82f6;">
-        <h2 style="color: #1e40af; margin: 0 0 15px 0; font-size: 20px;">📊 Track Your Data Usage</h2>
+      <div class="warning">
+        <strong>⚠️ Read This Before Installing:</strong>
+        <ul>
+          <li><strong>Install BEFORE you travel</strong> - you need WiFi to install</li>
+          <li>Each QR code can only be installed <strong>once</strong> - keep this email safe</li>
+          <li>After installing, keep the eSIM <strong>turned off</strong> until you reach your destination</li>
+          <li>Only turn it on and enable <strong>Data Roaming</strong> when you arrive</li>
+          <li>Don't delete the eSIM profile - it cannot be reinstalled</li>
+        </ul>
+      </div>
+
+      <div class="qr-section">
         <p style="color: #1e3a8a; margin: 0 0 20px 0; font-size: 15px;">Monitor your eSIM data usage in real-time and check remaining balance.</p>
         <table border="0" cellpadding="0" cellspacing="0" style="margin: 0 auto;">
           <tr>
@@ -407,7 +493,6 @@ function buildEmailHtml(data: DeliveryEmailData): string {
         </p>
       </div>
 
-      <div class="qr-section">
         <h2>📲 Install Your eSIM</h2>
         <p style="margin-bottom: 20px;">
           <!-- Button for iPhone users -->
@@ -507,6 +592,23 @@ function buildEmailHtml(data: DeliveryEmailData): string {
         </table>
       </div>
 
+      <div style="background: linear-gradient(135deg, #e0f2fe 0%, #dbeafe 100%); padding: 25px; border-radius: 12px; margin: 25px 0; border: 2px solid #3b82f6;">
+        <h2 style="color: #1e40af; margin: 0 0 15px 0; font-size: 20px;">📊 After Activation: Monitor Your Data</h2>
+        <p style="color: #1e3a8a; margin: 0 0 20px 0; font-size: 15px;">Once your eSIM is active, track your data usage in real-time and check remaining balance.</p>
+        <table border="0" cellpadding="0" cellspacing="0" style="margin: 0 auto;">
+          <tr>
+            <td align="center" bgcolor="#3b82f6" style="border-radius: 8px; padding: 14px 28px; box-shadow: 0 4px 6px rgba(59, 130, 246, 0.3);">
+              <a href="https://fluxyfi.com/pages/my-esim-usage?iccid=${esimPayload.iccid}" target="_blank" style="color: #ffffff; text-decoration: none; font-weight: bold; font-size: 16px; display: inline-block;">
+                📈 View My Usage Dashboard
+              </a>
+            </td>
+          </tr>
+        </table>
+        <p style="color: #64748b; margin: 15px 0 0 0; font-size: 13px; text-align: center;">
+          <em>Check your remaining data, usage history, and validity period</em>
+        </p>
+      </div>
+
       <div class="manual-codes">
         <h3>⌨️ Manual Installation (if QR scan doesn't work)</h3>
         <p>Enter these details manually in your eSIM settings:</p>
@@ -516,17 +618,6 @@ function buildEmailHtml(data: DeliveryEmailData): string {
         <div class="code-box">${esimPayload.activationCode}</div>
         <p><strong>ICCID:</strong></p>
         <div class="code-box">${esimPayload.iccid}</div>
-      </div>
-
-      <div class="warning">
-        <strong>⚠️ Important Notes:</strong>
-        <ul>
-          <li>Each QR code can only be installed <strong>once</strong> - keep this email safe</li>
-          <li><strong>Install before you travel</strong> (requires WiFi connection)</li>
-          <li>Keep the eSIM <strong>turned off</strong> until you reach your destination</li>
-          <li>Enable <strong>Data Roaming</strong> when you're ready to use it</li>
-          <li>Don't delete the eSIM profile - it cannot be reinstalled</li>
-        </ul>
       </div>
     </div>
     
@@ -575,7 +666,7 @@ ICCID: ${esimPayload.iccid}
 
 📖 INSTRUCTIONS
 
-iPhone (iOS 12.1+):
+iPhone (iOS 17.4+):
 1. Go to Settings → Cellular → Add eSIM
 2. Tap "Use QR Code" and scan
 3. Follow prompts to complete installation

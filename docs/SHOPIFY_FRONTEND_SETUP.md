@@ -187,7 +187,7 @@ themes/
         </div>
       </div>
 
-      {%- comment -%} Help Section {%- endcomment -%}
+      {%- comment -%} Help Section 
       <div class="esim-card esim-help-card">
         <h2 class="esim-card-title">Need Help?</h2>
         <p>If you have questions about your eSIM or need assistance, please contact our support team.</p>
@@ -200,11 +200,12 @@ themes/
           </a>
         </div>
       </div>
+      {%- endcomment -%}
 
       {%- comment -%} Refresh Button {%- endcomment -%}
       <div class="esim-actions">
         <button onclick="window.loadEsimUsage()" class="esim-button esim-button--refresh">
-          <span>🔄</span> Refresh Usage Data
+          Refresh Usage Data
         </button>
         <p class="esim-refresh-note">Data updates automatically every 5 minutes</p>
       </div>
@@ -219,7 +220,7 @@ themes/
 <script>
   // Pass backend API URL to JavaScript
   // IMPORTANT: Replace this URL with your actual backend URL
-  window.ESIM_API_BASE = 'https://your-backend.railway.app';
+  window.ESIM_API_BASE = 'https://esim-api-production-a56a.up.railway.app';
   window.ESIM_ICCID = new URLSearchParams(window.location.search).get('iccid');
 </script>
 
@@ -795,12 +796,12 @@ themes/
 }
 
 .esim-button--primary {
-  background: #3b82f6;
+  background: #1a1f71;
   color: white;
 }
 
 .esim-button--primary:hover {
-  background: #2563eb;
+  background: #13165a;
 }
 
 .esim-button--secondary {
@@ -814,13 +815,13 @@ themes/
 }
 
 .esim-button--refresh {
-  background: #10b981;
+  background: #1a1f71;
   color: white;
   width: 100%;
 }
 
 .esim-button--refresh:hover {
-  background: #059669;
+  background: #13165a;
 }
 
 /* Actions Section */

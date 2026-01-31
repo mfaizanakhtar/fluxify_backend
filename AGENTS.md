@@ -1,233 +1,355 @@
-# Shopify eSIM Fulfillment – Agent Instructions
+# Agent Instructions - Shopify eSIM Fulfillment System
 
-## Goal
-
-Build a backend system that automatically provisions and delivers eSIMs
-after a successful Shopify payment, using vendor APIs.
-
-The system must be reliable, idempotent, and simple to operate for low volume
-(≤ 1000 eSIMs total).
-
----
-
-## High-level Architecture
-
-- Shopify store handles products, checkout, and payment
-- Shopify **Custom App** exists ONLY for:
-  - Admin API access token
-  - Webhook registration
-  - Webhook HMAC verification secret
-- All business logic lives in an external Node.js backend
-
-One repository, two runtime processes:
-
-- **API process**: receives Shopify webhooks, admin endpoints
-- **Worker process**: provisions eSIMs, sends emails, marks fulfillment
-
-No embedded Shopify UI.  
-No App Bridge.  
-No OAuth.  
-No App Store listing.
+## Table of Contents
+- [System Overview](#system-overview)
+- [Coding Standards](#coding-standards)
+- [Testing Strategy](#testing-strategy)
+- [Documentation Strategy](#documentation-strategy)
+- [Documentation Index](#documentation-index)
 
 ---
 
-## Shopify Integration
+## System Overview
 
-### Shopify Custom App (single store)
+### What This System Does
+Backend system that automatically provisions and delivers eSIMs after successful Shopify payments using the FiRoam vendor API.
 
-- Created in Shopify Admin
-- Purpose:
-  - Receive `orders/paid` webhook
-  - Read orders + variant metafields
-  - Create fulfillments
-- Treated as credentials + permissions only (not a hosted service)
+**Key Characteristics:**
+- Reliable, idempotent eSIM provisioning
+- Low volume (≤1000 eSIMs total)
+- Two-process architecture: API + Worker
+- Shopify Custom App (webhooks only, no embedded UI)
 
-### Required API scopes
+### Architecture Pattern
+```
+Shopify Store (payment) 
+  → Webhook → API Process (idempotency check)
+  → Job Queue → Worker Process
+  → FiRoam API (provision eSIM)
+  → Email Delivery + Shopify Fulfillment
+```
 
-- read_orders
-- read_fulfillments
-- write_fulfillments
-- read_metafields
-
-### Webhooks
-
-- `orders/paid`
-- (optional later) `refunds/create`, `orders/cancelled`
-
----
-
-## Vendor eSIM Portal Integration
-
-### Source of truth for vendor API
-
-- All API endpoints, request/response formats, authentication, error codes, and required headers
-  for the eSIM portal MUST be implemented according to **FiRoam_documentation.pdf** (treat it as canonical).
-
-### Implementation rules
-
-- Wrap vendor API access behind a single module (e.g. `src/vendor/firoamClient.ts`)
-- Normalize vendor responses into an internal “canonical eSIM payload” shape used by the app
-- Never store vendor secrets in code; use environment variables only
-- Encrypt sensitive payload fields at rest (LPA string, activation codes, ICCID if applicable)
-
----
-
-## Product & Variant Modeling
-
-- Each eSIM offer is a Shopify product
-- Variants represent plan differences (data / duration / region)
-- Variant metafields store vendor mapping:
-  - vendor.planCode
-  - vendor.productId
-  - vendor.region
-  - delivery.type (qr | activation_code)
-
-Backend logic MUST rely on metafields, not product titles or SKUs.
-
----
-
-## Backend Technology Choices (Dev-first)
-
+**Technology Stack:**
 - Node.js + TypeScript
-- Fastify (or Express if preferred)
-- Postgres as the primary database
-- Prisma ORM + migrations
-- Background jobs:
-  - Preferred: pg-boss (Postgres-backed queue)
-  - Alternative: BullMQ + Redis
-- Email delivery: Postmark / SendGrid / AWS SES
-- QR generation from vendor LPA string
-- Sensitive fields (LPA, activation codes) encrypted at rest
+- Fastify (API framework)
+- PostgreSQL + Prisma ORM
+- pg-boss (job queue)
+- Resend (email delivery)
+- Railway (deployment)
 
 ---
 
-## Runtime Processes
+## Coding Standards
 
-### API Process
+### TypeScript Rules
+- **Strict mode enabled** - No implicit any, proper null checks
+- **No compiled .js files in src/** - Added to .gitignore
+- **Explicit types** - Avoid `any`, use proper interfaces
+- **Zod schemas** - For external API validation (FiRoam responses)
 
-Responsibilities:
+### File Organization
+```
+src/
+├── api/           # HTTP route handlers
+├── services/      # Business logic (email, jobs)
+├── vendor/        # External API clients (FiRoam)
+├── db/            # Database client + helpers
+├── utils/         # Shared utilities (crypto, etc.)
+└── server.ts      # Main entry point
+```
 
-- Receive `orders/paid` webhook
-- Verify Shopify HMAC signature
-- Perform idempotency check (order_id + line_item_id)
-- Persist delivery records
-- Enqueue provisioning job
-- Return HTTP 200 quickly
+### Code Style
+- **Functional approach** - Pure functions where possible
+- **Error handling** - Try/catch with proper logging
+- **Idempotency** - Check before provisioning (order_id + line_item_id)
+- **Security** - Encrypt sensitive data (LPA strings, activation codes)
 
-Also exposes:
+### Dependencies Management
+- Use exact versions for critical packages
+- Keep dev dependencies separate
+- Document version constraints in comments if needed
 
-- Admin endpoints (protected):
-  - resend delivery
-  - view status
-  - manual retry
-- Optional customer retrieval endpoint:
-  - GET /delivery/:token
-
-### Worker Process
-
-Responsibilities:
-
-- Dequeue provisioning jobs
-- Fetch order + variant metafields if needed
-- Call vendor API (per **FiRoam_documentation.txt**) to issue eSIM
-- Normalize vendor payload
-- Persist result in database
-- Generate QR code
-- Send delivery email
-- Create fulfillment in Shopify
-- Update delivery status
-
-Implements:
-
-- Retries with backoff
-- Terminal failure state after max attempts
+### Environment Variables
+- All secrets in `.env` (never committed)
+- `.env.example` shows required variables
+- Validate required env vars at startup
 
 ---
 
-## Data Model (Minimum)
+## Testing Strategy
 
-### esim_deliveries
+### Test Organization
+```
+src/
+├── __tests__/               # Unit tests (alongside code)
+├── api/__tests__/           # API route tests
+├── services/__tests__/      # Service layer tests
+└── vendor/__tests__/        # Vendor integration tests
+```
 
-- id
-- shop
-- order_id
-- order_name
-- line_item_id
-- variant_id
-- customer_email
-- vendor_reference_id
-- payload_encrypted (LPA / activation info)
-- status: pending | provisioning | delivered | failed | refunded
-- last_error
-- timestamps
+### Test Types
 
-### delivery_attempts
+#### 1. Unit Tests
+- **Location**: `src/**/__tests__/*.test.ts`
+- **Purpose**: Test individual functions/classes
+- **Framework**: Jest
+- **Mock**: External APIs, database calls
+- **Run**: `npm test`
 
-- delivery_id
-- channel (email)
-- result
-- timestamps
+#### 2. Integration Tests
+- **Location**: `test-output/` for results
+- **Purpose**: Test full workflows (webhook → provisioning)
+- **Database**: Use test database or in-memory
+- **Run**: `npm run test:integration` (if configured)
 
-### jobs
+#### 3. Manual Testing Checklist
+- Webhook signature verification
+- Duplicate order handling
+- Email delivery with QR codes
+- PDF generation
+- Usage tracking API
 
-- managed by queue system (pg-boss or BullMQ)
+### Test Requirements
+- **Idempotency**: Verify duplicate webhooks don't provision twice
+- **Error handling**: Test vendor API failures, retries
+- **Data encryption**: Verify sensitive fields encrypted at rest
+- **Email rendering**: Check Gmail, Outlook, Apple Mail compatibility
 
----
-
-## Delivery Strategy
-
-Primary:
-
-- Email with:
-  - QR code
-  - fallback activation codes
-  - setup instructions (iOS / Android)
-  - link to retrieval page
-
-Secondary:
-
-- Optional retrieval page for re-access:
-  - GET /delivery/:token
-  - Token-based auth
-  - Shows QR + instructions
+### Known Test Issues
+- **Stale .js files**: If tests fail with "method not found", delete compiled .js files in src/
+- **Environment**: Ensure test environment variables are set
 
 ---
 
-## Reliability Rules (Non-negotiable)
+## Documentation Strategy
 
-- Never provision eSIM inside webhook handler
-- Webhook handler must be idempotent
-- All vendor calls happen in worker jobs
-- Shopify webhook retries must not cause duplicate provisioning
-- Failures are logged and retry-limited
-- Manual resend must be possible
+### Documentation Principles
+1. **Separation of Concerns**: Different docs for different audiences
+2. **Versioning**: Document changes in UPDATE.md
+3. **Examples**: Always include code examples where applicable
+4. **Step-by-step**: Guides should be actionable, not just reference
+
+### Documentation Types
+
+#### 1. **Setup & Deployment Docs** (How to run the system)
+- Quickstart guides for local development
+- Deployment guides for production
+- Configuration references
+
+#### 2. **Integration Docs** (How to integrate with external systems)
+- Shopify integration details
+- FiRoam API integration
+- Webhook implementation
+
+#### 3. **Feature Docs** (How specific features work)
+- Email delivery with usage tracking
+- Usage tracking frontend
+- Data encryption
+
+#### 4. **Architecture Docs** (How the system is designed)
+- High-level architecture
+- Sequence diagrams
+- Data flow pipelines
+
+#### 5. **Developer Docs** (How to modify the system)
+- Coding standards (this file)
+- Testing approach
+- SDK migration guides
+
+### Updating Documentation
+- **When adding features**: Create or update feature docs
+- **When changing APIs**: Update integration docs
+- **When fixing bugs**: Note in UPDATE.md if it affects usage
+- **When refactoring**: Update architecture docs if structure changes
 
 ---
 
-## What Is Explicitly Out of Scope (for MVP)
+## Documentation Index
 
-- Embedded Shopify UI
+### 📋 Core Documentation (You Are Here)
+- **AGENTS.md** (this file) - Master index, coding standards, testing strategy
+
+### 🚀 Setup & Deployment
+
+| Document | Purpose | When to Use |
+|----------|---------|-------------|
+| [README.md](README.md) | Project overview, quick links | First time viewing project |
+| [docs/QUICKSTART.md](docs/QUICKSTART.md) | Local development setup | Setting up dev environment |
+| [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) | General deployment guide | Deploying to any platform |
+| [docs/RAILWAY_DEPLOY.md](docs/RAILWAY_DEPLOY.md) | Railway-specific deployment | Deploying to Railway (current prod) |
+
+### 🔌 Integration Documentation
+
+| Document | Purpose | When to Use |
+|----------|---------|-------------|
+| [docs/SHOPIFY_INTEGRATION.md](docs/SHOPIFY_INTEGRATION.md) | Shopify Custom App setup, webhook config | Setting up Shopify store integration |
+| [docs/WEBHOOK_IMPLEMENTATION.md](docs/WEBHOOK_IMPLEMENTATION.md) | Webhook handler implementation details | Understanding/modifying webhook logic |
+| [docs/FIROAM_INTEGRATION.md](docs/FIROAM_INTEGRATION.md) | FiRoam API client implementation | Working with FiRoam vendor API |
+| [FiRoam_documentation.txt](FiRoam_documentation.txt) | Official FiRoam API reference | Source of truth for FiRoam endpoints |
+
+### 🎨 Feature Documentation
+
+| Document | Purpose | When to Use |
+|----------|---------|-------------|
+| [docs/EMAIL_USAGE_TRACKING.md](docs/EMAIL_USAGE_TRACKING.md) | Usage tracking link in delivery emails | Understanding email delivery flow |
+| [docs/SHOPIFY_USAGE_INTEGRATION.md](docs/SHOPIFY_USAGE_INTEGRATION.md) | Backend API for usage tracking (Phase 1) | Setting up usage API backend |
+| [docs/SHOPIFY_FRONTEND_SETUP.md](docs/SHOPIFY_FRONTEND_SETUP.md) | Shopify theme frontend for usage (Phase 2) | Creating Shopify usage page |
+| [docs/DAYPASS_IMPLEMENTATION.md](docs/DAYPASS_IMPLEMENTATION.md) | Day pass eSIM implementation | Working with short-term eSIM plans |
+| [docs/SKU_MAPPING_FORMAT.md](docs/SKU_MAPPING_FORMAT.md) | SKU to FiRoam mapping strategy | Managing product-to-plan mappings |
+
+### 🏗️ Architecture & Design
+
+| Document | Purpose | When to Use |
+|----------|---------|-------------|
+| [docs/architecture.md](docs/architecture.md) | System architecture overview | Understanding high-level design |
+| [docs/sequence.md](docs/sequence.md) | Sequence diagrams for key flows | Visualizing order fulfillment flow |
+| [docs/PIPELINE.md](docs/PIPELINE.md) | Data flow pipeline documentation | Understanding data transformations |
+
+### 🔧 Developer Documentation
+
+| Document | Purpose | When to Use |
+|----------|---------|-------------|
+| [docs/UPDATE.md](docs/UPDATE.md) | Change log, version history | Checking what changed between versions |
+| [docs/SHOPIFY_SDK_MIGRATION.md](docs/SHOPIFY_SDK_MIGRATION.md) | Migration from old to new Shopify SDK | Upgrading Shopify dependencies |
+| [docs/GRAPHQL_VARIABLES_EXPLAINED.md](docs/GRAPHQL_VARIABLES_EXPLAINED.md) | Shopify GraphQL variable handling | Working with Shopify GraphQL API |
+
+### 📁 Data Files (Not Documentation)
+- `FiRoam.pdf` - FiRoam vendor documentation (PDF format)
+- `firoam-data/*.csv` - FiRoam package data exports
+- `csv-exports/*.csv` - Shopify product/SKU mapping exports
+
+---
+
+## Quick Reference: Which Doc to Use?
+
+### "I need to..."
+
+**Set up the project locally**
+→ [docs/QUICKSTART.md](docs/QUICKSTART.md)
+
+**Deploy to production**
+→ [docs/RAILWAY_DEPLOY.md](docs/RAILWAY_DEPLOY.md) or [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)
+
+**Connect Shopify store**
+→ [docs/SHOPIFY_INTEGRATION.md](docs/SHOPIFY_INTEGRATION.md)
+
+**Understand how webhooks work**
+→ [docs/WEBHOOK_IMPLEMENTATION.md](docs/WEBHOOK_IMPLEMENTATION.md)
+
+**Work with FiRoam API**
+→ [docs/FIROAM_INTEGRATION.md](docs/FIROAM_INTEGRATION.md) + [FiRoam_documentation.txt](FiRoam_documentation.txt)
+
+**Add usage tracking to emails**
+→ [docs/EMAIL_USAGE_TRACKING.md](docs/EMAIL_USAGE_TRACKING.md)
+
+**Build usage tracking page in Shopify**
+→ [docs/SHOPIFY_USAGE_INTEGRATION.md](docs/SHOPIFY_USAGE_INTEGRATION.md) (backend) + [docs/SHOPIFY_FRONTEND_SETUP.md](docs/SHOPIFY_FRONTEND_SETUP.md) (frontend)
+
+**Understand system architecture**
+→ [docs/architecture.md](docs/architecture.md) + [docs/sequence.md](docs/sequence.md)
+
+**Map Shopify products to FiRoam plans**
+→ [docs/SKU_MAPPING_FORMAT.md](docs/SKU_MAPPING_FORMAT.md)
+
+**Check what changed recently**
+→ [docs/UPDATE.md](docs/UPDATE.md)
+
+**Debug Shopify GraphQL**
+→ [docs/GRAPHQL_VARIABLES_EXPLAINED.md](docs/GRAPHQL_VARIABLES_EXPLAINED.md)
+
+---
+
+## Agent Workflow Guidelines
+
+### When Starting a New Task
+
+1. **Read this file first** (AGENTS.md) to understand context
+2. **Identify the relevant doc** from the index above
+3. **Read the specific doc** for detailed instructions
+4. **Check UPDATE.md** for recent changes that might affect your task
+5. **Review code in src/** to understand current implementation
+
+### When Making Changes
+
+1. **Follow coding standards** (see Coding Standards section)
+2. **Write tests** for new functionality
+3. **Update relevant documentation** if behavior changes
+4. **Add entry to UPDATE.md** if it's a notable change
+5. **Verify build passes**: `npm run build`
+6. **Run tests**: `npm test`
+
+### When Documenting
+
+1. **Use existing doc structure** - Don't create redundant docs
+2. **Update the relevant doc** from the index above
+3. **Add to this index** if creating a new doc (rare)
+4. **Include code examples** - Show, don't just tell
+5. **Think about the reader** - Developer? Operator? Business user?
+
+### Common Pitfalls to Avoid
+
+❌ Creating new docs without checking existing ones
+❌ Putting code logic in markdown files (keep code in src/)
+❌ Forgetting to update docs when changing APIs
+❌ Using `any` types instead of proper TypeScript interfaces
+❌ Hardcoding secrets instead of using environment variables
+❌ Skipping idempotency checks in provisioning logic
+❌ Not encrypting sensitive eSIM data (LPA, activation codes)
+
+### Best Practices
+
+✅ Read the relevant integration doc before modifying external API calls
+✅ Check sequence.md to understand the full order flow
+✅ Test webhook idempotency - send duplicate webhooks manually
+✅ Verify emails render correctly in Gmail, Outlook, Apple Mail
+✅ Use Zod schemas for vendor API response validation
+✅ Log important events (order received, eSIM provisioned, email sent)
+✅ Handle vendor API errors gracefully with retries
+
+---
+
+## System Constraints & Requirements
+
+### Non-Negotiable Rules (from Original Requirements)
+
+1. **Never provision eSIM inside webhook handler** - Always use job queue
+2. **Webhook handler must be idempotent** - Check order_id + line_item_id
+3. **All vendor calls happen in worker jobs** - Not in HTTP handlers
+4. **Shopify webhook retries must not cause duplicate provisioning**
+5. **Failures are logged and retry-limited** - No infinite retries
+6. **Manual resend must be possible** - Admin can retry failed deliveries
+7. **Sensitive data encrypted at rest** - LPA, activation codes, ICCID
+
+### What's Explicitly Out of Scope (MVP)
+
+- Embedded Shopify UI / Admin panels
 - App Store distribution
-- Multi-store support
+- Multi-store support (single store only)
 - Advanced fraud detection
-- Autoscaling / multi-region
-- Kubernetes
+- Auto-scaling / Multi-region deployment
+- Kubernetes / Complex orchestration
+
+### Success Criteria
+
+- ✅ Customer receives eSIM within minutes of payment
+- ✅ Duplicate provisioning never happens
+- ✅ Failed deliveries are visible and recoverable
+- ✅ Backend is simple to reason about and extend
+- ✅ Usage tracking works on mobile devices
+- ✅ Emails render correctly across all major clients
 
 ---
 
-## Deployment (Later, Not Blocking Dev)
+## Contact & Support
 
-- PaaS (Render / Railway / Fly) with:
-  - one API service
-  - one Worker service
-  - managed Postgres
-- Can migrate to AWS/GCP later with minimal changes
+For questions about:
+- **System design**: Read [docs/architecture.md](docs/architecture.md)
+- **Deployment issues**: Check [docs/RAILWAY_DEPLOY.md](docs/RAILWAY_DEPLOY.md)
+- **FiRoam API**: See [FiRoam_documentation.txt](FiRoam_documentation.txt)
+- **Recent changes**: Review [docs/UPDATE.md](docs/UPDATE.md)
 
 ---
 
-## Success Criteria
-
-- Customer receives eSIM within minutes of payment
-- Duplicate provisioning never happens
-- Failed deliveries are visible and recoverable
-- Backend is simple to reason about and extend
+**Last Updated**: January 31, 2026
+**System Version**: 0.1.0
+**Deployment**: Railway (Production)
